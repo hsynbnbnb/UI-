@@ -1,6 +1,6 @@
 <template>
     <main class="home-placeholder">
-        <h1>Teriteri Admin</h1>
+        <h1>pilipili Admin</h1>
         <p>Day 1 管理端工程已经启动。</p>
     </main>
 </template>

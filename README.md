@@ -1,6 +1,5 @@
 # Frontend Learning
 
-Client 与 Admin 前端 UI。
 
 ## 启动客户端
 
@@ -25,3 +24,4 @@ npm run serve
 ## 学习记录
 
 - [Day 1](docs/day01.md)
+- [Day 2](docs/day02.md)
