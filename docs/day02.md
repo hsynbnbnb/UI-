@@ -7,37 +7,6 @@
 - 管理端加入 `VPopover`。
 - 使用组件预览页验证主题变量和组件效果。
 
-## 从原项目复制的文件
-
-```text
-client/src/assets/css/base.css
-client/src/assets/css/element.css
-client/src/assets/css/global.css
-client/src/assets/css/normalize.css
-client/src/assets/css/videoCard.css
-client/src/assets/font/font.css
-client/src/assets/font/HarmonyOS_Sans_SC_Medium.ttf
-client/src/components/popover/VPopover.vue
-client/src/components/avatar/VAvatar.vue
-client/src/components/UserCard/VLevel.vue
-client/src/components/UserCard/UserCard.vue
-client/src/components/navbar/NavBar.vue
-client/src/utils/utils.js
-
-admin/src/assets/css/base.css
-admin/src/assets/css/element.css
-admin/src/assets/css/global.css
-admin/src/assets/css/normalize.css
-admin/src/assets/font/font.css
-admin/src/assets/font/HarmonyOS_Sans_SC_Medium.ttf
-admin/src/components/popover/VPopover.vue
-```
-
-## 新增文件
-
-- `client/src/views/DesignPreview.vue`
-- `admin/src/views/DesignPreview.vue`
-
 ## 验收
 
 - 启动 Client，页面显示粉红色主题、导航栏、头像、等级、用户卡片和悬浮弹层。
