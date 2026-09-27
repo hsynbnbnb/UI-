@@ -1,6 +1,6 @@
 <template>
     <main class="home-placeholder">
-        <h1>Teriteri Client</h1>
+        <h1>pilipili Client</h1>
         <p>Day 1 客户端工程已经启动。</p>
     </main>
 </template>

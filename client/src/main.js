@@ -9,6 +9,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { get, post } from './network/request'
+import './assets/css/base.css'
 
 const app = createApp(App)
 

@@ -1,6 +1,6 @@
 # Frontend Learning
 
-本仓库用于按天复刻 Teriteri 的 Client 与 Admin 前端 UI。
+本仓库用于按天复刻 pilipili 的 Client 与 Admin 前端 UI。
 
 ## 启动客户端
 
@@ -25,3 +25,4 @@ npm run serve
 ## 学习记录
 
 - [Day 1](docs/day01.md)
+- [Day 2](docs/day02.md)
