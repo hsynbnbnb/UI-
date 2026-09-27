@@ -21,7 +21,7 @@ npm run serve
 
 访问：http://localhost:8788
 
-## 学习记录
+## 日志
 
 - [Day 1](docs/day01.md)
 - [Day 2](docs/day02.md)
