@@ -1,156 +1,111 @@
 <template>
-    <main class="design-preview">
-        <header class="preview-header">
-            <h1>pilipili UI Foundation</h1>
-            <p>Day 2：全局样式与基础组件</p>
-        </header>
+    <div class="client-shell">
+        <HeaderBar :isFixHeaderBar="false"></HeaderBar>
 
-        <NavBar :navBarItem="navItems" @clickBarItem="handleNavClick"></NavBar>
+        <div class="channel-shell">
+            <HeaderChannel></HeaderChannel>
+        </div>
 
-        <section class="preview-grid">
-            <article class="preview-panel">
-                <h2>头像与等级</h2>
-                <div class="inline-row">
-                    <VAvatar :img="demoUser.avatar_url" :size="48" :auth="1"></VAvatar>
-                    <VLevel :level="5" :size="16"></VLevel>
-                </div>
-            </article>
+        <main class="preview-content">
+            <section class="preview-intro">
+                <h1>pilipili Client</h1>
+                <p>Day 3：顶部导航、频道栏、搜索框和登录注册。</p>
+            </section>
 
-            <article class="preview-panel">
-                <h2>悬浮弹层</h2>
-                <VPopover trigger="hover" placement="bottom">
-                    <template #reference>
-                        <button class="preview-button">悬停查看</button>
-                    </template>
-                    <template #content>
-                        <div class="popover-demo">VPopover 组件运行正常</div>
-                    </template>
-                </VPopover>
-            </article>
+            <section class="search-preview">
+                <h2>搜索组件预览</h2>
+                <SearchInput></SearchInput>
+            </section>
 
-            <article class="preview-panel user-card-panel">
-                <h2>用户卡片</h2>
-                <UserCard :user="demoUser"></UserCard>
-            </article>
-        </section>
-    </main>
+            <section class="preview-grid">
+                <article class="preview-panel">
+                    <h2>当前登录状态</h2>
+                    <p>{{ $store.state.isLogin ? `已登录：${$store.state.user.nickname}` : '未登录，可点击右上角登录' }}</p>
+                </article>
+
+                <article class="preview-panel">
+                    <h2>Mock 数据</h2>
+                    <p>频道数量：{{ $store.state.channels.length }}</p>
+                    <p>热搜数量：{{ $store.state.trendings.length }}</p>
+                </article>
+            </section>
+        </main>
+    </div>
 </template>
 
 <script>
-import NavBar from '@/components/navbar/NavBar.vue'
-import VAvatar from '@/components/avatar/VAvatar.vue'
-import VLevel from '@/components/UserCard/VLevel.vue'
-import VPopover from '@/components/popover/VPopover.vue'
-import UserCard from '@/components/UserCard/UserCard.vue'
+import HeaderBar from '@/components/headerBar/HeaderBar.vue'
+import HeaderChannel from '@/components/headerChannel/HeaderChannel.vue'
+import SearchInput from '@/components/search/SearchInput.vue'
 
 export default {
     name: 'DesignPreview',
     components: {
-        NavBar,
-        VAvatar,
-        VLevel,
-        VPopover,
-        UserCard
-    },
-    data() {
-        return {
-            navItems: [
-                { name: '首页', path: '/' },
-                { name: '视频', path: '/video' },
-                { name: '会员购', path: '/mall' }
-            ],
-            demoUser: {
-                uid: 1,
-                nickname: 'pilipili 用户',
-                avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png',
-                bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png',
-                gender: 2,
-                exp: 10800,
-                vip: 1,
-                auth: 1,
-                authMsg: '项目演示账号',
-                description: 'Day 2 基础组件预览',
-                followsCount: 128,
-                fansCount: 256,
-                loveCount: 1024
-            }
-        }
-    },
-    methods: {
-        handleNavClick(path) {
-            this.$message.info(`当前选择：${path}`)
-        }
+        HeaderBar,
+        HeaderChannel,
+        SearchInput
     }
 }
 </script>
 
 <style scoped>
-.design-preview {
+.client-shell {
     min-height: 100vh;
-    padding-bottom: 64px;
     background: var(--bg1);
     color: var(--text1);
 }
 
-.preview-header {
-    padding: 42px 40px 20px;
+.channel-shell {
+    padding-top: 64px;
 }
 
-.preview-header h1 {
+.preview-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+}
+
+.preview-intro h1 {
     margin: 0 0 8px;
     color: var(--brand_pink);
     font-size: 28px;
 }
 
-.preview-header p {
+.preview-intro p {
     margin: 0;
     color: var(--text3);
 }
 
-.preview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(280px, 1fr));
-    gap: 24px;
-    padding: 32px 40px;
-}
-
-.preview-panel {
-    min-height: 150px;
+.search-preview {
+    margin-top: 40px;
     padding: 24px;
     border: 1px solid var(--line_regular);
     border-radius: 8px;
     background: var(--bg1_float);
 }
 
+.search-preview h2,
 .preview-panel h2 {
-    margin: 0 0 20px;
+    margin: 0 0 16px;
     font-size: 16px;
-    font-weight: 600;
 }
 
-.inline-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
 }
 
-.preview-button {
-    height: 34px;
-    padding: 0 18px;
-    border: none;
-    border-radius: 6px;
-    background: var(--brand_pink);
-    color: #fff;
-    cursor: pointer;
+.preview-panel {
+    padding: 24px;
+    border: 1px solid var(--line_regular);
+    border-radius: 8px;
+    background: var(--bg1_float);
 }
 
-.popover-demo {
-    padding: 12px 16px;
+.preview-panel p {
+    margin: 8px 0 0;
     color: var(--text2);
-    white-space: nowrap;
-}
-
-.user-card-panel {
-    grid-column: 1 / -1;
 }
 </style>
