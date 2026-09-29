@@ -1,6 +1,5 @@
 # Frontend Learning
 
-本仓库用于按天复刻 pilipili 的 Client 与 Admin 前端 UI。
 
 ## 启动客户端
 
