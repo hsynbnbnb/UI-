@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-const Home = () => import('@/views/DesignPreview.vue')
+const Index = () => import('@/views/IndexVue.vue')
 const ComingSoon = () => import('@/views/ComingSoon.vue')
 
 const routes = [
-    { path: '/', name: 'home', component: Home },
+    { path: '/', name: 'home', component: Index },
     { path: '/search/:type', component: ComingSoon },
     { path: '/space/:uid', component: ComingSoon },
     { path: '/video/:vid', component: ComingSoon },
