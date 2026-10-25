@@ -204,6 +204,66 @@ const mockDanmuList = [
     { id: 120, uid: 36, content: '学习项目完结撒花', timePoint: 65, mode: 3, fontsize: 22, color: '#FFFFFF' }
 ];
 
+// Day 7 评论 Mock：字段与后端 Comment 实体一致（rootId=0 为一级评论，其余为楼中楼回复）
+function mockCommentUser(uid) {
+    return mockUploaders.find(u => u.uid === uid) || mockUser;
+}
+
+function mockReply(id, rootId, parentId, uid, toUserId, content, love, createTime) {
+    return {
+        id, vid: 16, uid, rootId, parentId, toUserId,
+        content, love, bad: 0, createTime, isTop: 0, isDeleted: 0,
+        user: mockCommentUser(uid),
+        toUser: toUserId ? mockCommentUser(toUserId) : null
+    };
+}
+
+function mockRootComment(id, uid, content, love, createTime, replies) {
+    return {
+        id, vid: 16, uid, rootId: 0, parentId: 0, toUserId: 0,
+        content, love, bad: 0, createTime, isTop: 0, isDeleted: 0,
+        user: mockCommentUser(uid),
+        replies
+    };
+}
+
+const mockRootComments = [
+    mockRootComment(201, 20, '第一次这么早，UP主的更新频率太感人了', 128, '2026-10-18 09:20', [
+        mockReply(301, 201, 201, 25, 20, '毕竟是大厂练习生，效率拉满', 12, '2026-10-18 09:41'),
+        mockReply(302, 201, 301, 16, 25, '楼上说笑了，就是肝得比较狠', 5, '2026-10-18 10:02')
+    ]),
+    mockRootComment(202, 31, '这个播放器的进度条交互做得真细，拖动和预缓冲都有', 96, '2026-10-17 21:15', [
+        mockReply(303, 202, 202, 36, 31, 'video.js 那一套也复刻了，Day 5 的内容', 8, '2026-10-17 21:33'),
+        mockReply(304, 202, 303, 20, 36, '坐等 Day 10 的上传分片', 3, '2026-10-17 22:01')
+    ]),
+    mockRootComment(203, 25, '弹幕字体和透明度都能调，爷青回', 77, '2026-10-16 14:48', []),
+    mockRootComment(204, 16, '建议加一个倍速记忆功能，每次都要重新点', 54, '2026-10-15 19:03', [
+        mockReply(305, 204, 204, 31, 16, 'localStorage 里已经存了播放设置，刷新还在', 9, '2026-10-15 19:25'),
+        mockReply(306, 204, 305, 16, 31, '原来如此，我去试试', 2, '2026-10-15 19:44')
+    ]),
+    mockRootComment(205, 36, '从设计稿到组件化的那期也出了，一起看', 41, '2026-10-14 11:12', []),
+    mockRootComment(206, 20, '这UI复刻程度，说是原版我都信', 33, '2026-10-13 16:37', [
+        mockReply(307, 206, 206, 25, 20, '其实就是逐字节抄的 CSS', 6, '2026-10-13 16:55')
+    ]),
+    mockRootComment(207, 31, '评论区占位了这么久，Day 7 终于来了', 28, '2026-10-12 08:30', []),
+    mockRootComment(208, 16, '已三连，期待管理端部分', 19, '2026-10-11 22:18', []),
+    mockRootComment(209, 36, 'Canvas 那期讲得清楚，弹幕引擎原理懂了', 15, '2026-10-10 15:46', []),
+    mockRootComment(210, 25, '学习资源给得很全，Vue Router 那篇看了三遍', 11, '2026-10-09 10:05', []),
+    mockRootComment(211, 20, 'Mock 层设计得挺巧妙，后面接真实后端也方便', 9, '2026-10-08 13:22', []),
+    mockRootComment(212, 31, '打卡第 12 天，坚持就是胜利', 7, '2026-10-07 09:00', [])
+];
+
+// UP 主觉得很赞的评论 id 集合
+const mockUpLikes = [201, 202, 204];
+
+let mockCommentIdSeq = 400;
+
+function nowTimeStr() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 const responses = {
     'GET /category/getall': { code: 200, message: 'OK', data: mockChannels },
     'GET /search/hot/get': { code: 200, message: 'OK', data: mockTrendings },
@@ -389,6 +449,84 @@ export function mockRequest(method, url, data, config) {
             message: 'OK',
             data: null
         }
+    }
+
+    // Day 7 评论楼列表（offset 分页，每页 5 条）
+    if (key === 'GET /comment/get') {
+        const offset = Number(config?.params?.offset || 0);
+        const comments = mockRootComments.slice(offset, offset + 5);
+        response = {
+            code: 200,
+            message: 'OK',
+            data: {
+                comments,
+                more: offset + 5 < mockRootComments.length
+            }
+        }
+    }
+
+    // Day 7 UP 主觉得很赞的评论 id
+    if (key === 'GET /comment/get-up-like') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: mockUpLikes.slice()
+        }
+    }
+
+    // Day 7 发表评论：按表单构造新评论返回（rootId=0 为一级评论，否则为楼中楼回复）
+    if (key === 'POST /comment/add') {
+        const val = k => (data && typeof data.get === 'function' ? data.get(k) : '');
+        const rootId = Number(val('root_id')) || 0;
+        const parentId = Number(val('parent_id')) || 0;
+        const toUserId = Number(val('to_user_id')) || 0;
+        const newComment = {
+            id: mockCommentIdSeq++,
+            vid: Number(val('vid')) || 16,
+            uid: mockUser.uid,
+            rootId,
+            parentId,
+            toUserId,
+            content: val('content') || '（空评论）',
+            love: 0,
+            bad: 0,
+            createTime: nowTimeStr(),
+            isTop: 0,
+            isDeleted: 0,
+            user: mockUser,
+            toUser: toUserId ? mockCommentUser(toUserId) : null
+        };
+        // 同步进 Mock 池，保证刷新后仍在（一级评论插入最前）
+        if (rootId === 0) {
+            mockRootComments.unshift({ ...newComment, replies: [] });
+        } else {
+            const root = mockRootComments.find(c => c.id === rootId);
+            if (root) root.replies.push(newComment);
+        }
+        response = {
+            code: 200,
+            message: '评论成功',
+            data: newComment
+        }
+    }
+
+    // Day 7 删除评论 / 点赞点踩评论
+    if (key === 'POST /comment/delete' || key === 'POST /comment/love-or-not') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: null
+        }
+    }
+
+    // Day 7 展开更多楼中楼回复（后端该接口直接返回 CommentTree，不包 CustomResponse）
+    if (key === 'GET /comment/reply/get-more') {
+        const root = mockRootComments.find(c => c.id === Number(config?.params?.id));
+        const payload = root ? { ...root, replies: root.replies.slice() } : null;
+        return Promise.resolve({
+            data: JSON.parse(JSON.stringify(payload)),
+            config
+        });
     }
 
     if (response) {
