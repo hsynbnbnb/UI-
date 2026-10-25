@@ -6,7 +6,8 @@
 - 新增 `CarouselIndex.vue` 轮播组件与 `carousel.json` 数据，复刻首页头图轮播、标题、圆点与左右切换。
 - 复用 Day 2 已就位的 `videoCard.css`（与原仓库逐字节一致），完成视频卡片、骨架屏与统计数据浮层。
 - 新增 Mock 接口 `/video/random/visitor` 与 `/video/cumulative/visitor`，实现随机推荐、换一换与滚动累加加载。
-- 复刻头图动画（冬季头图随鼠标移动切换早/中/傍晚）、固钉导航栏与固钉频道栏。
+- 复刻头图动画（头图随鼠标移动切换早/中/傍晚）、固钉导航栏与固钉频道栏。
+- V1 修订：头图背景与品牌 Logo 已去 B 站化，"动态/热门"图标已更换，详见文末《Day 4 V1 修订记录》。
 
 ## 源文件路径（teriteri-client-main）
 
@@ -15,9 +16,9 @@ teriteri-client-main/src/views/IndexVue.vue
 teriteri-client-main/src/components/carousel/CarouselIndex.vue
 teriteri-client-main/src/assets/json/carousel.json
 teriteri-client-main/src/assets/css/videoCard.css          （Day 2 已复制，本日验证一致）
-teriteri-client-main/src/assets/img/teriteri-white.png     （按 Day 1 约定复制并更名为 pilipili-white.png）
-teriteri-client-main/src/assets/img/bilibili/bilibili-winter-view-*.jpg / *.webm / *-snow.png
-teriteri-client-main/src/assets/img/bilibili/bilibili-winter-tree-*.png
+teriteri-client-main/src/assets/img/teriteri-white.png     （Day 4 初版复制并更名；V1 已重绘为 pilipili 字样）
+teriteri-client-main/src/assets/img/bilibili/bilibili-winter-view-*.jpg / *.webm / *-snow.png   （V1 已整体移除）
+teriteri-client-main/src/assets/img/bilibili/bilibili-winter-tree-*.png                        （V1 已整体移除）
 ```
 
 ## 复制命令（PowerShell）
@@ -166,8 +167,8 @@ npm run serve
 
 ## 验收
 
-- 首页显示冬季头图、品牌 logo、频道栏与固钉频道栏结构。
-- 鼠标在头图区域移动时，早/中/傍晚三层头图与雪花遮罩随 `--percentage` 过渡。
+- 首页显示头图、品牌 logo、频道栏与固钉频道栏结构。
+- 鼠标在头图区域移动时，早/中/傍晚三层头图与遮罩随 `--percentage` 过渡（V1 起为 pilipili 春日主题）。
 - 轮播图自动播放（约 3.5 秒一张），支持圆点跳转、左右箭头切换，标题与底色随当前图变化。
 - 随机推荐渲染 11 张视频卡片：封面、播放量、弹幕量、时长、标题、UP主与投稿时间齐全。
 - 点击“换一换”重新随机 11 条，刷新图标旋转。
@@ -189,4 +190,64 @@ npm run serve
 git add client docs/day04.md README.md
 git commit -m "day04: build client home feed and carousel"
 git tag day04
+```
+
+---
+
+# Day 4 V1 修订记录（提交 `day4-V1`）
+
+> 修订范围：品牌 Logo 去 teriteri 化、头图背景去 B 站化、"动态/热门"入口图标更换。
+> 除上述两项及相关资源引用外，未改动任何功能逻辑。
+
+## 1. 左上角文字：teriteri → pilipili
+
+Day 1 仅把原仓库的 teriteri 字样图片**更名为** `pilipili-*.png`，图片内容仍是 "teriteri"。本次直接替换了图片内容（路径不变，页面无需改引用）：
+
+| 文件 | 用途 | 处理 |
+| :-- | :-- | :-- |
+| `client/src/assets/img/pilipili-white.png` | 首页头图横幅内的白色 Logo | 用 Segoe Script 手写字体重绘 "pilipili"，透明底，按 CSS 的 150×50 显示区做 3:1 补边防变形 |
+| `client/src/assets/img/pilipili-pink.png` | 顶部导航栏入口的粉色 Logo（全站共用） | 同一字样粉色 `#FF6699` 版，834×245 |
+
+## 2. 头图背景更换（不再使用 B 站冬季头图）
+
+- **删除** `client/src/assets/img/bilibili/`（8 个文件：2 张冬景 jpg、1 个 webm、雪花遮罩、3 张树枝及版权说明 txt）。
+- **新增** `client/src/assets/img/banner/`（pilipili 春日主题，PIL 程序化绘制，3000×231 宽幅条与原素材同规格）：
+
+```text
+pilipili-view-1.jpg     晨景：粉橙渐变天空、太阳、流云、樱花树、小屋、飞鸟
+pilipili-view-2.jpg     午景：同构图暖粉配色
+pilipili-view-3.webm    暮色：VP9、3000×231、4s 循环（流云漂移 + 星星呼吸，imageio-ffmpeg 编码）
+pilipili-petal.png      花瓣/霜感遮罩（替代原雪花遮罩，右侧柔光团 + 飘散花瓣点）
+pilipili-tree-1.png     樱花枝剪影视差层·晨（替代原冬季树枝）
+pilipili-tree-2.png     樱花枝剪影视差层·午
+pilipili-tree-3.png     樱花枝剪影视差层·暮
+```
+
+- `client/src/views/IndexVue.vue` 中同步更新 7 处资源引用与版权注释，并清理了引用已删除资源的注释代码块（`header__banner` 死代码）。
+- 三个时段的**构图完全一致**（同一绘制函数切换调色板 + 固定随机种子），原有的透明度交叉过渡、视差与暮色视频层效果不变。
+
+## 3. "动态" "热门"入口图标更换
+
+原图标来自远程 iconfont 字体（`iconfont icon-fengche` 风车 / `iconfont icon-huo` 火焰，alicdn CDN），共 3 处，全部替换为内联 SVG 线性图标：
+
+| 位置 | 文件与代码位置 | 样式 |
+| :-- | :-- | :-- |
+| 频道栏常驻入口 | `client/src/components/headerChannel/HeaderChannel.vue` 第 6~17 行（`svg.channel-icon`） | 绿/红圆形底内的白色线性图标 |
+| 固钉频道栏（滚动后出现） | `client/src/views/IndexVue.vue` 固钉栏 `svg.fixed-channel-icon` | 深色线性图标，hover 变粉 |
+| 顶部导航栏右侧入口 | `client/src/components/headerBar/HeaderBar.vue` 约第 303 行（`svg.right-entry-icon`） | 白色线性图标，固钉态变深 |
+
+- 新图标：**动态 = 轨道图标**（圆心 + 倾斜椭圆轨道 + 卫星圆点）；**热门 = 上升趋势箭头**（trending-up）。均使用 `currentColor`，原 hover 变色逻辑完整保留。
+- 用户自行更换图标的方法：直接改上述三个 `.vue` 中对应的 `<svg>...</svg>` 片段（`viewBox` 24×24、`stroke-width` 2）；也可替换为 `<img class="channel-icon" src="~assets/img/你的图标.svg">` 形式，尺寸由 `.icon-bg .channel-icon`、`.left-fixed-channel .fixed-channel-icon`、`.right-entry--outside .right-entry-icon` 三条 CSS 规则控制。
+
+## V1 验证
+
+- `npm run serve`（8787）编译通过；无头 Chrome + CDP 验证：频道栏/固钉栏/顶部导航三处新图标渲染正常，头图三层过渡与暮色视频播放正常（`video.currentTime` 推进、花瓣遮罩透明度达到 1），控制台无异常。
+- 提交：`day4-V1: replace teriteri branding with pilipili assets and new channel icons`，标签 `day4-V1`。
+
+## Day 4 V1 提交
+
+```bash
+git add client docs/day04.md
+git commit -m "day4-V1: replace teriteri branding with pilipili assets and new channel icons"
+git tag day4-V1
 ```

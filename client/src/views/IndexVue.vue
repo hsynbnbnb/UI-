@@ -2,30 +2,20 @@
     <div class="index">
         <div class="large-header">
             <HeaderBar :isFixHeaderBar="isFixHeaderBar"></HeaderBar>
-            <!-- <div class="header__banner">
-                <picture class="v-img banner-img">
-                    <img src="~assets/img/bilibili/banner.png" alt="">
-                </picture>
-                <div class="header-banner__inner">
-                    <div class="logo-box">
-                        <img src="~assets/img/pilipili-white.png" alt="">
-                    </div>
-                </div>
-            </div> -->
             <header>
-                <!-- 动画效果头图，文件资源版权归bilibili官方所有，本项目仅用作学习，无商业用途！ -->
+                <!-- 动画效果头图：pilipili 春日主题，由 PIL 程序化绘制，无第三方素材 -->
                 <div class="view">
-                    <img src="~assets/img/bilibili/bilibili-winter-view-1.jpg" class="morning" alt="">
-                    <img src="~assets/img/bilibili/bilibili-winter-view-2.jpg" class="afternoon" alt="">
+                    <img src="~assets/img/banner/pilipili-view-1.jpg" class="morning" alt="">
+                    <img src="~assets/img/banner/pilipili-view-2.jpg" class="afternoon" alt="">
                     <video autoplay loop muted class="evening">
-                        <source src="~assets/img/bilibili/bilibili-winter-view-3.webm" type="video/webm" />
+                        <source src="~assets/img/banner/pilipili-view-3.webm" type="video/webm" />
                     </video>
-                    <img src="~assets/img/bilibili/bilibili-winter-view-3-snow.png" class="window-cover" alt="">
+                    <img src="~assets/img/banner/pilipili-petal.png" class="window-cover" alt="">
                 </div>
                 <div class="tree">
-                    <img src="~assets/img/bilibili/bilibili-winter-tree-1.png" class="morning" alt="">
-                    <img src="~assets/img/bilibili/bilibili-winter-tree-2.png" class="afternoon" alt="">
-                    <img src="~assets/img/bilibili/bilibili-winter-tree-3.png" class="evening" alt="">
+                    <img src="~assets/img/banner/pilipili-tree-1.png" class="morning" alt="">
+                    <img src="~assets/img/banner/pilipili-tree-2.png" class="afternoon" alt="">
+                    <img src="~assets/img/banner/pilipili-tree-3.png" class="evening" alt="">
                 </div>
                 <div class="header-banner__inner">
                     <div class="logo-box">
@@ -42,11 +32,24 @@
                 @mouseenter="isChannelDown = true;" @mouseleave="isChannelDown = false;">
                 <div class="header-channel-fixed-left">
                     <div class="left-fixed-channel">
-                        <i class="iconfont icon-fengche"></i>
+                        <!-- 动态：轨道图标（Day4-V1 更换，替代原 B 站风车图标） -->
+                        <svg class="fixed-channel-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <circle cx="12" cy="12" r="3.4"></circle>
+                            <ellipse cx="12" cy="12" rx="9.6" ry="4.1" transform="rotate(-24 12 12)"></ellipse>
+                            <circle cx="18.2" cy="6.7" r="1.7" fill="currentColor" stroke="none"></circle>
+                        </svg>
                         <span>动态</span>
                     </div>
                     <div class="left-fixed-channel">
-                        <i class="iconfont icon-huo"></i>
+                        <!-- 热门：上升趋势图标（Day4-V1 更换，替代原 B 站火焰图标） -->
+                        <svg class="fixed-channel-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <polyline points="4 17 10 11 14 14.5 20 7"></polyline>
+                            <polyline points="15 7 20 7 20 12"></polyline>
+                        </svg>
                         <span>热门</span>
                     </div>
                 </div>
@@ -765,16 +768,18 @@ header .window-cover {
     align-items: center;
 }
 
-.left-fixed-channel .iconfont {
+.left-fixed-channel .fixed-channel-icon {
     color: var(--text1);
-    font-size: 21px;
+    width: 20px;
+    height: 20px;
     display: inline-block;
     position: relative;
     margin-right: 5px;
+    flex-shrink: 0;
 }
 
 .left-fixed-channel:hover,
-.left-fixed-channel:hover .iconfont {
+.left-fixed-channel:hover .fixed-channel-icon {
     color: var(--brand_pink);
 }
 

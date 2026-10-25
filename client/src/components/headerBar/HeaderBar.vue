@@ -301,7 +301,14 @@
                 <VPopover pop-style="padding-top: 17px;">
                     <template #reference>
                         <div class="right-entry--outside" @click="this.$store.state.isLogin ? noPage() : dialogVisible = true;">
-                            <i class="iconfont icon-fengche"></i>
+                            <!-- 动态：轨道图标（Day4-V1 更换，替代原 B 站风车图标） -->
+                            <svg class="right-entry-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <circle cx="12" cy="12" r="3.4"></circle>
+                                <ellipse cx="12" cy="12" rx="9.6" ry="4.1" transform="rotate(-24 12 12)"></ellipse>
+                                <circle cx="18.2" cy="6.7" r="1.7" fill="currentColor" stroke="none"></circle>
+                            </svg>
                             <span>动态</span>
                         </div>
                     </template>
@@ -1358,6 +1365,10 @@
     color: var(--text1);
 }
 
+.slide-down .right-entry--outside .right-entry-icon {
+    color: var(--text1);
+}
+
 .slide-down .right-entry--outside {
     color: var(--text2);
 }
@@ -1379,6 +1390,14 @@
     font-size: 20px;
     display: inline-block;
     position: relative;
+}
+
+.right-entry--outside .right-entry-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    position: relative;
+    margin-bottom: 2px;
 }
 
 .message-entry-popover {

@@ -7,13 +7,26 @@
                     <picture class="v-img icon-bg--up" v-if="dynamicPic">
                         <img src="https://cdn.acwing.com/media/user/profile/photo/240972_md_e16c066264.jpg" alt="">
                     </picture>
-                    <i class="iconfont icon-fengche" v-else></i>
+                    <!-- 动态：轨道图标（Day4-V1 更换，替代原 B 站风车图标） -->
+                    <svg class="channel-icon" v-else viewBox="0 0 24 24" width="24" height="24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <circle cx="12" cy="12" r="3.4"></circle>
+                        <ellipse cx="12" cy="12" rx="9.6" ry="4.1" transform="rotate(-24 12 12)"></ellipse>
+                        <circle cx="18.2" cy="6.7" r="1.7" fill="currentColor" stroke="none"></circle>
+                    </svg>
                 </div>
                 <span class="icon-title">动态</span>
             </div>
             <div class="channel-icons__item">
                 <div class="icon-bg icon-bg__popular">
-                    <i class="iconfont icon-huo"></i>
+                    <!-- 热门：上升趋势图标（Day4-V1 更换，替代原 B 站火焰图标） -->
+                    <svg class="channel-icon" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <polyline points="4 17 10 11 14 14.5 20 7"></polyline>
+                        <polyline points="15 7 20 7 20 12"></polyline>
+                    </svg>
                 </div>
                 <span class="icon-title">热门</span>
             </div>
@@ -416,12 +429,11 @@
     background: #eb908f;
 }
 
-.icon-bg .iconfont {
+.icon-bg .channel-icon {
     width: 25px;
     height: 25px;
-    font-size: 24px;
-    line-height: 25px;
     margin-left: 2px;
+    display: block;
 }
 
 .right-channel-container {
