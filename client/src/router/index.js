@@ -3,11 +3,44 @@ import { createRouter, createWebHistory } from 'vue-router'
 const Index = () => import('@/views/IndexVue.vue')
 const ComingSoon = () => import('@/views/ComingSoon.vue')
 const VideoDetail = () => import('@/views/detail/VideoDetail.vue')
+const Search = () => import('@/views/search/SearchView.vue')
+const SearchVideo = () => import('@/views/search/children/SearchVideo.vue')
+const SearchUser = () => import('@/views/search/children/SearchUser.vue')
+const Space = () => import('@/views/space/SpaceView.vue')
+const SpaceHome = () => import('@/views/space/children/SpaceHome.vue')
+const SpaceVideo = () => import('@/views/space/children/SpaceVideo.vue')
+const SpaceArticle = () => import('@/views/space/children/SpaceArticle.vue')
+const SpaceDynamic = () => import('@/views/space/children/SpaceDynamic.vue')
+const SpaceFavlist = () => import('@/views/space/children/SpaceFavlist.vue')
+const SpaceSetting = () => import('@/views/space/children/SpaceSetting.vue')
+const SpaceFollow = () => import('@/views/space/children/SpaceFollow.vue')
+const SpaceFans = () => import('@/views/space/children/SpaceFans.vue')
 
 const routes = [
     { path: '/', name: 'home', component: Index },
-    { path: '/search/:type', component: ComingSoon },
-    { path: '/space/:uid', component: ComingSoon },
+    {
+        path: '/search',
+        component: Search,
+        props: route => ({ keyword: route.query.keyword }),
+        children: [
+            { path: '/search/video', component: SearchVideo, props: route => ({ keyword: route.query.keyword }) },
+            { path: '/search/user', component: SearchUser, props: route => ({ keyword: route.query.keyword }) }
+        ]
+    },
+    {
+        path: '/space',
+        component: Space,
+        children: [
+            { path: '/space/:uid', component: SpaceHome },
+            { path: '/space/:uid/video', component: SpaceVideo },
+            { path: '/space/:uid/article', component: SpaceArticle },
+            { path: '/space/:uid/dynamic', component: SpaceDynamic },
+            { path: '/space/:uid/favlist', component: SpaceFavlist, props: route => ({ fid: route.query.fid }) },
+            { path: '/space/:uid/setting', component: SpaceSetting },
+            { path: '/space/:uid/fans/follow', component: SpaceFollow },
+            { path: '/space/:uid/fans/fans', component: SpaceFans }
+        ]
+    },
     { path: '/video/:vid', component: VideoDetail },
     { path: '/message/:type', component: ComingSoon },
     { path: '/platform/:type', component: ComingSoon },

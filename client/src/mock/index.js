@@ -258,6 +258,22 @@ const mockUpLikes = [201, 202, 204];
 
 let mockCommentIdSeq = 400;
 
+// Day 8 个人空间 Mock 用户：字段与空间页视图模型一致（bg_url/avatar_url/各计数）
+const mockSpaceUsers = {
+    5: { uid: 5, username: 'pilipili05', nickname: '感动收集站', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 2, description: 'Day 8 Mock 用户：收集每一个感动的瞬间', exp: 10800, coin: 128, vip: 0, state: 0, auth: 0, authMsg: '', followsCount: 42, fansCount: 1080, loveCount: 326, playCount: 15600 },
+    6: { uid: 6, username: 'pilipili06', nickname: '治疗时间', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 2, description: '治疗就交给我吧', exp: 4500, coin: 52, vip: 0, state: 0, auth: 0, authMsg: '', followsCount: 18, fansCount: 466, loveCount: 98, playCount: 6200 },
+    16: { uid: 16, username: 'pilipili16', nickname: '提瓦特观测站长', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 1, description: '游戏区认证UP主，一起庆祝每个生日', exp: 28800, coin: 666, vip: 3, state: 0, auth: 2, authMsg: '游戏区认证UP主', followsCount: 88, fansCount: 12800, loveCount: 4600, playCount: 98000 },
+    20: { uid: 20, username: 'pilipili20', nickname: '新歌速递员', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 0, description: '新歌速递，快前来围观', exp: 1500, coin: 12, vip: 0, state: 0, auth: 0, authMsg: '', followsCount: 6, fansCount: 230, loveCount: 45, playCount: 3100 },
+    25: { uid: 25, username: 'pilipili25', nickname: '泛动数据库', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 2, description: '学习项目账号', exp: 200, coin: 3.5, vip: 0, state: 0, auth: 1, authMsg: '学习项目账号', followsCount: 12, fansCount: 66, loveCount: 12, playCount: 880 },
+    28: { uid: 28, username: 'pilipili28', nickname: '恋爱选择题', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 2, description: '哥哥的女朋友，只能由我来选', exp: 50, coin: 0.5, vip: 0, state: 0, auth: 0, authMsg: '', followsCount: 3, fansCount: 21, loveCount: 5, playCount: 460 },
+    31: { uid: 31, username: 'pilipili31', nickname: '前端练习生', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 1, description: '30分钟搭一个仿B站首页', exp: 10800, coin: 88, vip: 1, state: 0, auth: 0, authMsg: '', followsCount: 56, fansCount: 2400, loveCount: 890, playCount: 21000 },
+    36: { uid: 36, username: 'pilipili36', nickname: 'Canvas 研究所', avatar_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', bg_url: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png', gender: 2, description: '用Canvas画一个弹幕引擎', exp: 4500, coin: 36, vip: 0, state: 0, auth: 0, authMsg: '', followsCount: 24, fansCount: 720, loveCount: 210, playCount: 8600 }
+};
+
+function mockSpaceUser(uid) {
+    return mockSpaceUsers[Number(uid)] || mockSpaceUsers[16];
+}
+
 function nowTimeStr() {
     const d = new Date();
     const p = n => String(n).padStart(2, '0');
@@ -290,7 +306,7 @@ const responses = {
     'GET /search/count': {
         code: 200,
         message: 'OK',
-        data: { video: 0, user: 0 }
+        data: { video: 12, user: 3 }
     },
     'POST /user/account/login': {
         code: 200,
@@ -527,6 +543,91 @@ export function mockRequest(method, url, data, config) {
             data: JSON.parse(JSON.stringify(payload)),
             config
         });
+    }
+
+    // Day 8 个人空间：用户信息
+    if (key === 'GET /user/info/get-one') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: mockSpaceUser(config?.params?.uid)
+        }
+    }
+
+    // Day 8 用户投稿数
+    if (key === 'GET /video/user-works-count') {
+        const uid = Number(config?.params?.uid) || 16;
+        const count = mockVideoPool.filter(v => v.video.uid === uid).length;
+        response = {
+            code: 200,
+            message: 'OK',
+            data: count
+        }
+    }
+
+    // Day 8 用户投稿视频列表 / 最近点赞 / 收藏夹视频
+    if (key === 'GET /video/user-works') {
+        const uid = Number(config?.params?.uid) || 16;
+        const list = mockVideoPool.filter(v => v.video.uid === uid);
+        response = {
+            code: 200,
+            message: 'OK',
+            data: { count: list.length, list: list.slice() }
+        }
+    }
+
+    if (key === 'GET /video/user-love') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: mockVideoPool.slice(0, 6)
+        }
+    }
+
+    if (key === 'GET /video/user-collect') {
+        // 收藏夹视频项带 info（收藏时间与收藏夹 id），供“收藏于”展示与取消收藏
+        const fid = Number(config?.params?.fid) || 1;
+        response = {
+            code: 200,
+            message: 'OK',
+            data: mockVideoPool.slice(2, 8).map(item => ({
+                ...item,
+                info: { vid: item.video.vid, fid, time: '2026-10-20 20:30' }
+            }))
+        }
+    }
+
+    // Day 8 搜索：视频 / 用户（按关键词粗过滤，保持 Mock 确定性）
+    if (key === 'GET /search/video/only-pass') {
+        const keyword = decodeURIComponent(String(config?.params?.keyword || ''));
+        const list = keyword
+            ? mockVideoPool.filter(v => v.video.title.includes(keyword) || v.user.nickname.includes(keyword))
+            : mockVideoPool.slice();
+        response = {
+            code: 200,
+            message: 'OK',
+            data: list.length ? list : mockVideoPool.slice(0, 10)
+        }
+    }
+
+    if (key === 'GET /search/user') {
+        const keyword = decodeURIComponent(String(config?.params?.keyword || ''));
+        const list = Object.values(mockSpaceUsers).filter(u =>
+            !keyword || u.nickname.includes(keyword) || u.username.includes(keyword));
+        response = {
+            code: 200,
+            message: 'OK',
+            data: list.length ? list : Object.values(mockSpaceUsers).slice(0, 5)
+        }
+    }
+
+    // Day 8 搜索词条记录 / 分类计数
+    if (key === 'POST /search/word/add') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: null
+        }
     }
 
     if (response) {
