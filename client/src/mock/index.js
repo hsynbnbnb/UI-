@@ -260,6 +260,15 @@ export function mockRequest(method, url, data, config) {
         }
     }
 
+    // Day 5 播放上报：游客/登录用户播放计数，Mock 直接成功
+    if (key === 'POST /video/play/visitor' || key === 'POST /video/play/user') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: null
+        }
+    }
+
     if (response) {
         return Promise.resolve({
             data: JSON.parse(JSON.stringify(response)),
