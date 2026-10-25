@@ -160,6 +160,50 @@ function buildMockVideoItem(seed, index) {
 
 const mockVideoPool = mockVideoSeeds.map(buildMockVideoItem)
 
+// Day 6 视频详情 Mock：播放地址复用本地测试视频（webpack 解析）
+const mockVideoUrl = require('@/assets/video/BadApple.mp4');
+
+function buildMockVideoDetail(vid) {
+    const item = mockVideoPool.find(v => v.video.vid === Number(vid)) || mockVideoPool[0];
+    return {
+        video: {
+            ...item.video,
+            tags: 'UI复刻\r\nVue3\r\n前端学习',
+            descr: 'Day 6 Mock 视频简介：本页面为 pilipili 客户端 UI 复刻学习项目，'
+                + '所有数据均来自 Mock 层，不依赖 Spring Boot / MySQL / Redis。\r\n'
+                + '复刻范围：播放器、弹幕、收藏、评论与推荐列表。',
+            videoUrl: mockVideoUrl
+        },
+        user: item.user,
+        category: item.category,
+        stats: item.stats
+    };
+}
+
+// Day 6 弹幕 Mock：字段与播放器渲染一致（timePoint 秒 / mode 1滚动 2顶部 3底部）
+const mockDanmuList = [
+    { id: 101, uid: 16, content: '第一集终于来了', timePoint: 1, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 102, uid: 20, content: '前来三连支持', timePoint: 2, mode: 1, fontsize: 22, color: '#FF6699' },
+    { id: 103, uid: 25, content: '这个转场太帅了', timePoint: 4, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 104, uid: 31, content: 'UP主辛苦了', timePoint: 6, mode: 1, fontsize: 22, color: '#FFD700' },
+    { id: 105, uid: 36, content: '弹幕护体', timePoint: 8, mode: 2, fontsize: 22, color: '#FFFFFF' },
+    { id: 106, uid: 16, content: 'DateTime 处理得真细', timePoint: 10, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 107, uid: 20, content: '看到就是赚到', timePoint: 13, mode: 1, fontsize: 22, color: '#FF6699' },
+    { id: 108, uid: 25, content: '一键三连了', timePoint: 16, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 109, uid: 31, content: '这就是复刻的细节吗', timePoint: 19, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 110, uid: 36, content: '进度条也能拖', timePoint: 22, mode: 3, fontsize: 22, color: '#FFFFFF' },
+    { id: 111, uid: 16, content: '倍速播放无压力', timePoint: 26, mode: 1, fontsize: 22, color: '#FFD700' },
+    { id: 112, uid: 20, content: '清晰度切换很流畅', timePoint: 30, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 113, uid: 25, content: '收藏夹弹窗也好用', timePoint: 34, mode: 1, fontsize: 22, color: '#FF6699' },
+    { id: 114, uid: 31, content: '推荐列表会更新', timePoint: 38, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 115, uid: 36, content: 'Day 7 评论区见', timePoint: 42, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 116, uid: 16, content: '这个简介会展开', timePoint: 46, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 117, uid: 20, content: '标签也可以点', timePoint: 50, mode: 2, fontsize: 22, color: '#FFD700' },
+    { id: 118, uid: 25, content: 'UP主主页即将开放', timePoint: 55, mode: 1, fontsize: 22, color: '#FFFFFF' },
+    { id: 119, uid: 31, content: ' mock 数据真香', timePoint: 60, mode: 1, fontsize: 22, color: '#FF6699' },
+    { id: 120, uid: 36, content: '学习项目完结撒花', timePoint: 65, mode: 3, fontsize: 22, color: '#FFFFFF' }
+];
+
 const responses = {
     'GET /category/getall': { code: 200, message: 'OK', data: mockChannels },
     'GET /search/hot/get': { code: 200, message: 'OK', data: mockTrendings },
@@ -172,7 +216,11 @@ const responses = {
     'GET /favorite/get-all/user': {
         code: 200,
         message: 'OK',
-        data: [{ fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 0 }]
+        data: [
+            { fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 12 },
+            { fid: 2, uid: 1, type: 0, visible: 1, title: '前端学习', count: 8 },
+            { fid: 3, uid: 1, type: 0, visible: 0, title: '私密收藏夹', count: 3 }
+        ]
     },
     'GET /comment/get-like-and-dislike': {
         code: 200,
@@ -262,6 +310,80 @@ export function mockRequest(method, url, data, config) {
 
     // Day 5 播放上报：游客/登录用户播放计数，Mock 直接成功
     if (key === 'POST /video/play/visitor' || key === 'POST /video/play/user') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: null
+        }
+    }
+
+    // Day 6 视频详情
+    if (key === 'GET /video/getone') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: buildMockVideoDetail(config?.params?.vid)
+        }
+    }
+
+    // Day 6 弹幕列表（路径带 vid 参数）
+    if (key.startsWith('GET /danmu-list/')) {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: mockDanmuList.slice()
+        }
+    }
+
+    // Day 6 点赞/点踩：按 isLove/isSet 返回最新态度
+    if (key === 'POST /video/love-or-not') {
+        const isLove = data && typeof data.get === 'function' ? Number(data.get('isLove')) : 1;
+        const isSet = data && typeof data.get === 'function' ? Number(data.get('isSet')) : 1;
+        response = {
+            code: 200,
+            message: 'OK',
+            data: {
+                love: isLove && isSet ? 1 : 0,
+                unlove: !isLove && isSet ? 1 : 0,
+                coin: 12,
+                collect: 0
+            }
+        }
+    }
+
+    // Day 6 收藏了该视频的收藏夹ID集合
+    if (key === 'GET /video/collected-fids') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: [2]
+        }
+    }
+
+    // Day 6 游客态获取他人收藏夹列表
+    if (key === 'GET /favorite/get-all/visitor') {
+        response = {
+            code: 200,
+            message: 'OK',
+            data: [
+                { fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 12 },
+                { fid: 2, uid: 1, type: 0, visible: 1, title: '前端学习', count: 8 },
+                { fid: 3, uid: 1, type: 0, visible: 0, title: '私密收藏夹', count: 3 }
+            ]
+        }
+    }
+
+    // Day 6 新建收藏夹
+    if (key === 'POST /favorite/create') {
+        response = {
+            code: 200,
+            message: '创建成功',
+            data: { fid: 99, uid: 1, type: 0, visible: 1, title: 'Mock 新收藏夹', count: 0 }
+        }
+    }
+
+    // Day 6 收藏/取消收藏视频
+    if (key === 'POST /video/collect' || key === 'POST /video/cancel-collect') {
         response = {
             code: 200,
             message: 'OK',

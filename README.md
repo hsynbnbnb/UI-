@@ -28,3 +28,4 @@ npm run serve
 - [Day 3](docs/day03.md)
 - [Day 4](docs/day04.md)
 - [Day 5](docs/day05.md)
+- [Day 6](docs/day06.md)
