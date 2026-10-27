@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginVue from '@/views/LoginVue.vue'
 import IndexVue from '@/views/IndexVue.vue'
 import DashboardView from '@/views/DashboardView.vue'
-import AdminPlaceholder from '@/views/AdminPlaceholder.vue'
+import AdminTableView from '@/views/AdminTableView.vue'
 import VideoReview from '@/views/VideoReview.vue'
 
 const routes = [
@@ -15,12 +15,12 @@ const routes = [
             { path: '', redirect: '/dashboard' },
             { path: 'dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
             { path: 'review', name: 'review', component: VideoReview, meta: { requiresAuth: true, title: '视频审核' } },
-            { path: 'content', name: 'content', component: AdminPlaceholder, meta: { requiresAuth: true, title: '内容管理' } },
-            { path: 'data', name: 'data', component: AdminPlaceholder, meta: { requiresAuth: true, title: '数据统计' } },
-            { path: 'report', name: 'report', component: AdminPlaceholder, meta: { requiresAuth: true, title: '举报处理' } },
-            { path: 'appeal', name: 'appeal', component: AdminPlaceholder, meta: { requiresAuth: true, title: '申诉处理' } },
-            { path: 'user', name: 'user', component: AdminPlaceholder, meta: { requiresAuth: true, title: '用户管理' } },
-            { path: 'role', name: 'role', component: AdminPlaceholder, meta: { requiresAuth: true, title: '角色权限' } }
+            { path: 'content', name: 'content', component: AdminTableView, meta: { requiresAuth: true, title: '内容管理', endpoint: '/admin/content/list' } },
+            { path: 'data', name: 'data', component: AdminTableView, meta: { requiresAuth: true, title: '数据统计', endpoint: '/admin/data/overview' } },
+            { path: 'report', name: 'report', component: AdminTableView, meta: { requiresAuth: true, title: '举报处理', endpoint: '/admin/report/list' } },
+            { path: 'appeal', name: 'appeal', component: AdminTableView, meta: { requiresAuth: true, title: '申诉处理', endpoint: '/admin/appeal/list' } },
+            { path: 'user', name: 'user', component: AdminTableView, meta: { requiresAuth: true, title: '用户管理', endpoint: '/admin/user/list' } },
+            { path: 'role', name: 'role', component: AdminTableView, meta: { requiresAuth: true, title: '角色权限', endpoint: '/admin/role/list' } }
         ]
     },
     { path: '/:catchAll(.*)', redirect: '/' }

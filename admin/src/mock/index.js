@@ -37,6 +37,29 @@ const REVIEW_COUNTS = (() => {
     return { pending: p, approved: a, rejected: r }
 })()
 
+const ADMIN_CONTENT = Array.from({ length: 15 }, (_, i) => ({
+    vid: 16 + i, title: '内容管理示例视频 ' + (i + 1), coverUrl: REVIEW_COVER, uid: 31, nickname: '前端练习生',
+    status: i % 4 === 0 ? 0 : 1, uploadDate: '2026-10-' + String((i % 28) + 1).padStart(2, '0') + ' 10:00', play: 30000 + i * 1000
+}))
+const ADMIN_REPORTS = Array.from({ length: 8 }, (_, i) => ({
+    id: 100 + i, type: ['视频', '评论', '私聊'][i % 3], targetId: 10 + i,
+    reason: ['违规内容', '人身攻击', '垃圾广告'][i % 3], reporter: '用户' + (i + 1),
+    status: i % 3 === 0 ? 0 : 1, createTime: '2026-10-' + String(10 + i).padStart(2, '0') + ' 10:00'
+}))
+const ADMIN_APPEALS = Array.from({ length: 6 }, (_, i) => ({
+    id: 200 + i, vid: 16 + i, reason: '误判申诉', status: i % 2, createTime: '2026-10-' + String(20 + i).padStart(2, '0') + ' 14:00'
+}))
+const ADMIN_USERS = [
+    { uid: 1, nickname: 'pilipili 用户', username: 'pilipili', role: 0, state: 0, regTime: '2026-01-01' },
+    { uid: 31, nickname: '前端练习生', username: 'pilipili31', role: 0, state: 0, regTime: '2026-02-01' },
+    { uid: 16, nickname: '提瓦特观测站长', username: 'pilipili16', role: 0, state: 0, regTime: '2026-03-01' }
+]
+const ADMIN_ROLES = [
+    { id: 1, name: '超级管理员', desc: '全部权限', permissions: ['*'] },
+    { id: 2, name: '内容审核员', desc: '审核视频/评论', permissions: ['review:video', 'review:comment'] },
+    { id: 3, name: '普通运营', desc: '查看数据', permissions: ['data:view'] }
+]
+
 const responses = {
     'GET /admin/personal/info': { code: 200, message: 'OK', data: ADMIN },
     'GET /admin/menu/list': { code: 200, message: 'OK', data: MENU },
@@ -94,6 +117,24 @@ export function mockRequest(method, url, data, config) {
     if (key === 'POST /admin/video/preview') {
         response = { code: 200, message: '预览成功', data: null }
     }
+
+    // Day 13 管理全路由
+    if (key === 'GET /admin/content/list') {
+        const page = Number(config && config.params && config.params.page || 1)
+        const size = Number(config && config.params && config.params.size || 10)
+        const start = (page - 1) * size
+        response = {
+            code: 200, message: 'OK',
+            data: { list: ADMIN_CONTENT.slice(start, start + size), total: ADMIN_CONTENT.length, page, size, hasNext: start + size < ADMIN_CONTENT.length }
+        }
+    }
+    if (key === 'GET /admin/data/overview') {
+        response = { code: 200, message: 'OK', data: { dau: 32000, newVideos: 320, newUsers: 540, playTrend: [480000, 760000, 600000, 920000, 1120000, 1000000, 1240000] } }
+    }
+    if (key === 'GET /admin/report/list') response = { code: 200, message: 'OK', data: ADMIN_REPORTS }
+    if (key === 'GET /admin/appeal/list') response = { code: 200, message: 'OK', data: ADMIN_APPEALS }
+    if (key === 'GET /admin/user/list') response = { code: 200, message: 'OK', data: ADMIN_USERS }
+    if (key === 'GET /admin/role/list') response = { code: 200, message: 'OK', data: ADMIN_ROLES }
 
     if (!response) response = { code: 200, message: 'OK', data: null }
     return Promise.resolve({
