@@ -15,6 +15,8 @@ const SpaceFavlist = () => import('@/views/space/children/SpaceFavlist.vue')
 const SpaceSetting = () => import('@/views/space/children/SpaceSetting.vue')
 const SpaceFollow = () => import('@/views/space/children/SpaceFollow.vue')
 const SpaceFans = () => import('@/views/space/children/SpaceFans.vue')
+const Account = () => import('@/views/account/AccountView.vue')
+const Message = () => import('@/views/message/MessageView.vue')
 
 const routes = [
     { path: '/', name: 'home', component: Index },
@@ -42,7 +44,8 @@ const routes = [
         ]
     },
     { path: '/video/:vid', component: VideoDetail },
-    { path: '/message/:type', component: ComingSoon },
+    { path: '/message/:type', component: Message, props: route => ({ type: route.params.type }) },
+    { path: '/account/:type', component: Account, props: route => ({ type: route.params.type }) },
     { path: '/platform/:type', component: ComingSoon },
     { path: '/:catchAll(.*)', redirect: '/' }
 ]

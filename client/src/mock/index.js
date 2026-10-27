@@ -274,6 +274,38 @@ function mockSpaceUser(uid) {
     return mockSpaceUsers[Number(uid)] || mockSpaceUsers[16];
 }
 
+// Day 9 消息中心 Mock 数据：回复/@/赞/系统/动态（feed）+ 私聊（whisper）
+let mockMsgSeq = 1000
+const mockFeedMessages = {
+    reply: [
+        { id: 1, type: 'reply', fromUser: mockUploaders[1], content: '第一次这么早，UP主的更新频率太感人了', sourceTitle: '【Vue3】30分钟搭一个仿B站首页', createTime: '2026-10-18 09:20', isRead: 0 },
+        { id: 2, type: 'reply', fromUser: mockUploaders[2], content: '这个播放器的进度条交互做得真细', sourceTitle: '从零手写一个视频播放器控件', createTime: '2026-10-17 21:15', isRead: 0 }
+    ],
+    at: [],
+    love: [
+        { id: 3, type: 'love', fromUser: mockUploaders[0], content: '赞了你的评论', sourceTitle: '弹幕字体和透明度都能调', createTime: '2026-10-16 14:48', isRead: 0 },
+        { id: 4, type: 'love', fromUser: mockUploaders[3], content: '赞了你的动态', sourceTitle: '今天也在学前端', createTime: '2026-10-15 19:03', isRead: 1 }
+    ],
+    system: [
+        { id: 5, type: 'system', content: '欢迎使用 pilipili，遵守社区规范哦～', createTime: '2026-10-01 00:00', isRead: 0 }
+    ],
+    dynamic: []
+}
+const mockChatList = [
+    { chat: { id: 101, userId: 16, unread: 2, latestTime: '2026-10-18 10:00' }, user: mockUploaders[2], detail: { more: true, list: [] } },
+    { chat: { id: 102, userId: 31, unread: 0, latestTime: '2026-10-17 22:00' }, user: mockUploaders[6], detail: { more: true, list: [] } }
+]
+const mockChatDetails = {
+    101: [
+        { id: 1, sendId: 16, acceptId: 1, content: '在吗？看了你的首页复刻', time: '2026-10-18 09:55', withdraw: 0 },
+        { id: 2, sendId: 1, acceptId: 16, content: '在的，欢迎交流～', time: '2026-10-18 09:58', withdraw: 0 },
+        { id: 3, sendId: 16, acceptId: 1, content: '弹幕引擎那期什么时候出', time: '2026-10-18 10:00', withdraw: 0 }
+    ],
+    102: [
+        { id: 4, sendId: 31, acceptId: 1, content: 'CSS 布局那篇写得太好了', time: '2026-10-17 21:50', withdraw: 0 }
+    ]
+}
+
 function nowTimeStr() {
     const d = new Date();
     const p = n => String(n).padStart(2, '0');
@@ -628,6 +660,48 @@ export function mockRequest(method, url, data, config) {
             message: 'OK',
             data: null
         }
+    }
+
+    // Day 9 账号中心：资料 / 设置 / 头像
+    if (key === 'GET /user/account/info') {
+        response = { code: 200, message: 'OK', data: mockUser }
+    }
+    if (key === 'POST /user/account/info') {
+        const nickname = data && typeof data.get === 'function' ? data.get('nickname') : (data && data.nickname);
+        if (nickname) mockUser.nickname = nickname;
+        response = { code: 200, message: '资料已更新', data: { ...mockUser } }
+    }
+    if (key === 'POST /user/account/password') {
+        response = { code: 200, message: '密码修改成功', data: null }
+    }
+    if (key === 'GET /user/account/setting') {
+        response = { code: 200, message: 'OK', data: { bindPhone: '138****8888', bindEmail: 'pil****@example.com', twoFactor: false, privacy: 'public' } }
+    }
+    if (key === 'POST /user/account/avatar') {
+        response = { code: 200, message: '头像已更新', data: { avatar_url: mockUser.avatar_url } }
+    }
+
+    // Day 9 消息中心：回复/@/赞/系统/动态 + 私聊
+    if (key.startsWith('GET /message/list/')) {
+        const type = key.split('/').pop();
+        response = { code: 200, message: 'OK', data: mockFeedMessages[type] || [] }
+    }
+    if (key === 'GET /message/whisper/list') {
+        response = { code: 200, message: 'OK', data: mockChatList.slice() }
+    }
+    if (key === 'GET /message/whisper/detail') {
+        response = { code: 200, message: 'OK', data: mockChatDetails[config?.params?.chatId] || [] }
+    }
+    if (key === 'POST /message/whisper/send') {
+        const chatId = data && typeof data.get === 'function' ? data.get('chatId') : (data && data.chatId);
+        const content = data && typeof data.get === 'function' ? data.get('content') : (data && data.content) || '';
+        const msg = { id: mockMsgSeq++, sendId: mockUser.uid, acceptId: Number(chatId) || 101, content, time: nowTimeStr(), withdraw: 0 };
+        if (!mockChatDetails[chatId]) mockChatDetails[chatId] = [];
+        mockChatDetails[chatId].push(msg);
+        response = { code: 200, message: '发送成功', data: msg }
+    }
+    if (key === 'POST /message/read') {
+        response = { code: 200, message: '已读', data: null }
     }
 
     if (response) {
