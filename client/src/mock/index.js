@@ -704,6 +704,32 @@ export function mockRequest(method, url, data, config) {
         response = { code: 200, message: '已读', data: null }
     }
 
+    // Day 10 创作中心 + 上传
+    if (key === 'GET /creator/overview') {
+        response = { code: 200, message: 'OK', data: { totalVideos: mockVideoPool.length, totalPlay: 123456, totalFans: mockUser.fansCount, pendingReview: 2 } }
+    }
+    if (key === 'GET /creator/videos') {
+        response = { code: 200, message: 'OK', data: mockVideoPool.slice(0, 10).map(v => ({ vid: v.video.vid, title: v.video.title, coverUrl: v.video.coverUrl, status: 1, uploadDate: v.video.uploadDate, play: v.stats.play })) }
+    }
+    if (key === 'GET /creator/tags/hot') {
+        response = { code: 200, message: 'OK', data: ['前端', 'Vue3', 'CSS', 'Canvas', '弹幕', '播放器', '教程', 'Vlog', 'UI复刻'] }
+    }
+    if (key === 'GET /category/list') {
+        response = { code: 200, message: 'OK', data: mockChannels }
+    }
+    if (key === 'POST /video/submit') {
+        response = { code: 200, message: '投稿成功', data: { vid: 999, status: 1 } }
+    }
+    if (key === 'POST /upload/init') {
+        response = { code: 200, message: 'OK', data: { uploadId: 'up_mock_' + Date.now() } }
+    }
+    if (key === 'POST /upload/chunk') {
+        response = { code: 200, message: 'chunk received', data: null }
+    }
+    if (key === 'POST /upload/merge') {
+        response = { code: 200, message: '合并完成', data: { url: 'https://teriteri.oss-cn-heyuan.aliyuncs.com/mock/video.mp4', chunks: 1 } }
+    }
+
     if (response) {
         return Promise.resolve({
             data: JSON.parse(JSON.stringify(response)),
