@@ -1,13 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-const Home = () => import('@/views/DesignPreview.vue')
+import LoginVue from '@/views/LoginVue.vue'
+import IndexVue from '@/views/IndexVue.vue'
+import DashboardView from '@/views/DashboardView.vue'
+import AdminPlaceholder from '@/views/AdminPlaceholder.vue'
 
 const routes = [
-    { path: '/', name: 'home', component: Home },
+    { path: '/login', name: 'login', component: LoginVue },
+    {
+        path: '/',
+        component: IndexVue,
+        meta: { requiresAuth: true },
+        children: [
+            { path: '', redirect: '/dashboard' },
+            { path: 'dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
+            { path: 'review', name: 'review', component: AdminPlaceholder, meta: { requiresAuth: true, title: '视频审核' } },
+            { path: 'content', name: 'content', component: AdminPlaceholder, meta: { requiresAuth: true, title: '内容管理' } },
+            { path: 'data', name: 'data', component: AdminPlaceholder, meta: { requiresAuth: true, title: '数据统计' } },
+            { path: 'report', name: 'report', component: AdminPlaceholder, meta: { requiresAuth: true, title: '举报处理' } },
+            { path: 'appeal', name: 'appeal', component: AdminPlaceholder, meta: { requiresAuth: true, title: '申诉处理' } },
+            { path: 'user', name: 'user', component: AdminPlaceholder, meta: { requiresAuth: true, title: '用户管理' } },
+            { path: 'role', name: 'role', component: AdminPlaceholder, meta: { requiresAuth: true, title: '角色权限' } }
+        ]
+    },
     { path: '/:catchAll(.*)', redirect: '/' }
 ]
 
-export default createRouter({
+const router = createRouter({
     history: createWebHistory(),
     routes
 })
+
+router.beforeEach((to, from, next) => {
+    const isLogin = router.app.$store ? router.app.$store.state.isLogin : false
+    const hasToken = !!localStorage.getItem('admin_token')
+    if (to.meta.requiresAuth && !isLogin && !hasToken) {
+        next('/login')
+    } else if (to.path === '/login' && (isLogin || hasToken)) {
+        next('/')
+    } else {
+        next()
+    }
+})
+
+export default router
