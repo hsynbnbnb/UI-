@@ -3,6 +3,7 @@ import LoginVue from '@/views/LoginVue.vue'
 import IndexVue from '@/views/IndexVue.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import AdminPlaceholder from '@/views/AdminPlaceholder.vue'
+import VideoReview from '@/views/VideoReview.vue'
 
 const routes = [
     { path: '/login', name: 'login', component: LoginVue },
@@ -13,7 +14,7 @@ const routes = [
         children: [
             { path: '', redirect: '/dashboard' },
             { path: 'dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
-            { path: 'review', name: 'review', component: AdminPlaceholder, meta: { requiresAuth: true, title: '视频审核' } },
+            { path: 'review', name: 'review', component: VideoReview, meta: { requiresAuth: true, title: '视频审核' } },
             { path: 'content', name: 'content', component: AdminPlaceholder, meta: { requiresAuth: true, title: '内容管理' } },
             { path: 'data', name: 'data', component: AdminPlaceholder, meta: { requiresAuth: true, title: '数据统计' } },
             { path: 'report', name: 'report', component: AdminPlaceholder, meta: { requiresAuth: true, title: '举报处理' } },
