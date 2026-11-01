@@ -43,6 +43,16 @@
 
     let timer;  // 定时器
 
+    // 本地封面占位图（原 OSS 链接已失效，改本地 SVG）
+    const localCovers = [
+        require('@/assets/img/cover/cover-1.svg'),
+        require('@/assets/img/cover/cover-2.svg'),
+        require('@/assets/img/cover/cover-3.svg'),
+        require('@/assets/img/cover/cover-4.svg'),
+        require('@/assets/img/cover/cover-5.svg'),
+        require('@/assets/img/cover/cover-6.svg')
+    ];
+
     export default {
         name: "CarouselIndex",
         data() {
@@ -62,7 +72,11 @@
         methods: {
             // 请求
             getCarousels() {
-                this.carousels = carouselJson;
+                // carousel.json 里的 url 是失效的远程 OSS 链接，这里按序号映射到本地 SVG
+                this.carousels = carouselJson.map((item, i) => ({
+                    ...item,
+                    url: localCovers[i % localCovers.length]
+                }));
                 this.$store.commit("updateCarousels", this.carousels.slice());
             },
 

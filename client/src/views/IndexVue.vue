@@ -5,8 +5,8 @@
             <header>
                 <!-- 动画效果头图：pilipili 春日主题，由 PIL 程序化绘制，无第三方素材 -->
                 <div class="view">
-                    <img src="~assets/img/banner/pilipili-view-1.jpg" class="morning" alt="">
-                    <img src="~assets/img/banner/pilipili-view-2.jpg" class="afternoon" alt="">
+                    <img src="~assets/img/banner/pilipili-view-1.png" class="afternoon" alt="">
+                    <img src="~assets/img/banner/pilipili-view-2.jpg" class="morning" alt="">
                     <video autoplay loop muted class="evening">
                         <source src="~assets/img/banner/pilipili-view-3.webm" type="video/webm" />
                     </video>
@@ -1184,4 +1184,4 @@ header .window-cover {
     .feed-roll-btn {
         opacity: 0.8;
     }
-}</style>
+}</style>

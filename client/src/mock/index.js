@@ -60,14 +60,17 @@ const mockTrendings = [
     { content: 'Vue 3 项目', type: 1 }
 ]
 
-// Day 4 首页推荐流 Mock：封面沿用 carousel.json 中的 OSS 封面（断网时仅保布局）
+// Day 4 首页推荐流 Mock：封面使用本地 SVG 占位图
+// 原远程 OSS 链接已 403 失效，picsum 国内也超时，改为本地 assets 下的 SVG：
+//   - require 由 webpack 处理，打包后自动加 hash，断网也能显示
+//   - 6 张渐变色占位图，对应视频卡片 16:9 比例
 const mockCovers = [
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20240322/img/cover/1711110712131c01f29fff12245a78e31cb36033e04ab.jpg',
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20231112/img/cover/1699782969068e3233962e04a4d54ad29ac078b31add0.jpg',
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20231102/img/cover/16989300077191113ff089d75455a89a91ef0c1b89aab.jpg',
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20231102/img/cover/169893110490716d5c74c17514eaea15cffcc3b4944a6.jpg',
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20231117/img/cover/17001510817100b014757b37643f186af536d99f10e36.jpg',
-    'https://teriteri.oss-cn-heyuan.aliyuncs.com/20231226/img/cover/17035809290911763e6df5b5045a79df241f241a9dd65.jpg'
+    require('@/assets/img/cover/cover-1.svg'),
+    require('@/assets/img/cover/cover-2.svg'),
+    require('@/assets/img/cover/cover-3.svg'),
+    require('@/assets/img/cover/cover-4.svg'),
+    require('@/assets/img/cover/cover-5.svg'),
+    require('@/assets/img/cover/cover-6.svg')
 ]
 
 const mockUploaders = [
