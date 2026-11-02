@@ -18,6 +18,10 @@ const SpaceFans = () => import('@/views/space/children/SpaceFans.vue')
 const Account = () => import('@/views/account/AccountView.vue')
 const Message = () => import('@/views/message/MessageView.vue')
 const Platform = () => import('@/views/platform/PlatformView.vue')
+const Mall = () => import('@/views/mall/MallView.vue')
+const MallProductDetail = () => import('@/views/mall/MallProductDetail.vue')
+const MallCart = () => import('@/views/mall/MallCart.vue')
+const MallOrders = () => import('@/views/mall/MallOrders.vue')
 
 const routes = [
     { path: '/', name: 'home', component: Index },
@@ -48,6 +52,11 @@ const routes = [
     { path: '/message/:type', component: Message, props: route => ({ type: route.params.type }) },
     { path: '/account/:type', component: Account, props: route => ({ type: route.params.type }) },
     { path: '/platform/:type', component: Platform, props: route => ({ type: route.params.type }) },
+    // 会员购（商城）路由，路径与 Mobileapp 保持一致：/mall /product/:id /cart /orders
+    { path: '/mall', component: Mall },
+    { path: '/product/:id', component: MallProductDetail },
+    { path: '/cart', component: MallCart },
+    { path: '/orders', component: MallOrders },
     { path: '/:catchAll(.*)', redirect: '/' }
 ]
 

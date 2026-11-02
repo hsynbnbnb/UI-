@@ -42,6 +42,8 @@ export default createStore({
         trendings: [],
         // 搜索到的相关数据数量 [视频, 用户]
         matchingCount: [0, 0],
+        // 购物车商品列表（字段对齐 Mobileapp 的 CartItem）
+        cartItems: [],
     },
     mutations: {
         // 退出登录或登录过期时初始化个别数据
@@ -109,6 +111,13 @@ export default createStore({
         updateMatchingCount(state, matchingCount) {
             state.matchingCount = matchingCount;
         },
+
+        // 更新购物车列表
+        updateCartItems(state, items) {
+            state.cartItems = items;
+        },
+
+        // 处理websocket事件
 
         // 处理websocket事件
         setWebSocket(state, ws) {
@@ -402,6 +411,85 @@ export default createStore({
             state.msgUnread[3] = data.system;
             state.msgUnread[4] = data.whisper;
             state.msgUnread[5] = data.dynamic;
+        },
+
+        // ========== 购物车（逻辑对齐 Mobileapp 的 CartContext） ==========
+        // 从 localStorage 加载购物车
+        loadCart({ commit }) {
+            try {
+                const raw = localStorage.getItem('pilipili_cart');
+                const items = raw ? JSON.parse(raw) : [];
+                commit('updateCartItems', Array.isArray(items) ? items : []);
+            } catch (e) {
+                commit('updateCartItems', []);
+            }
+        },
+
+        // 持久化购物车到 localStorage
+        saveCart({ state }) {
+            localStorage.setItem('pilipili_cart', JSON.stringify(state.cartItems));
+        },
+
+        // 加入购物车（product 为商品对象，qty 默认 1）
+        addCartItem({ commit, state }, { product, qty = 1 }) {
+            const items = state.cartItems.slice();
+            const exist = items.find(i => i.id === product.id);
+            if (exist) {
+                exist.qty += qty;
+            } else {
+                items.push({
+                    id: product.id,
+                    title: product.title,
+                    coverSeed: product.coverSeed,
+                    coverUrl: product.coverUrl,
+                    price: product.price,
+                    qty,
+                    shop: product.shop,
+                    spec: (product.tags && product.tags[0]) || '默认规格',
+                    selected: true,
+                });
+            }
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // 移除商品
+        removeCartItem({ commit, state }, id) {
+            const items = state.cartItems.filter(i => i.id !== id);
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // 更新数量（1~99）
+        updateCartQty({ commit, state }, { id, qty }) {
+            const items = state.cartItems.map(i =>
+                i.id === id ? { ...i, qty: Math.max(1, Math.min(99, qty)) } : i
+            );
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // 切换选中
+        toggleCartSelect({ commit, state }, id) {
+            const items = state.cartItems.map(i =>
+                i.id === id ? { ...i, selected: !i.selected } : i
+            );
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // 全选/全不选
+        toggleCartSelectAll({ commit, state }, selected) {
+            const items = state.cartItems.map(i => ({ ...i, selected }));
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // 清空已选商品
+        clearSelectedCart({ commit, state }) {
+            const items = state.cartItems.filter(i => !i.selected);
+            commit('updateCartItems', items);
+            localStorage.setItem('pilipili_cart', JSON.stringify(items));
         },
 
         // 初始化websocket实例

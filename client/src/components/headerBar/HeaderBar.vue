@@ -31,7 +31,7 @@
             <div class="default-entry" @click="noPage">
                 <span>游戏中心</span>
             </div>
-            <div class="default-entry" @click="noPage">
+            <div class="default-entry" @click="openNewPage('/mall')">
                 <span>会员购</span>
             </div>
             <div class="download-entry" @click="noPage" v-if="!isFixHeaderBar">

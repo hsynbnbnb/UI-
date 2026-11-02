@@ -315,6 +315,69 @@ function nowTimeStr() {
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// ==================== Day 11 会员购（商城）Mock ====================
+// 数据模型与 Mobileapp 的 src/types/index.ts 保持一致：
+//   Product { id, title, coverSeed, price, originalPrice?, sold, shop, tags, category }
+//   Order   { id, shop, status, items: [{id,title,coverSeed,price,qty}], total }
+// 封面用 coverSeed 生成渐变占位图（webpack 打包本地 SVG）
+const mallCoverMap = {
+    'prod-paimon': require('@/assets/img/cover/cover-1.svg'),
+    'prod-fontaine': require('@/assets/img/cover/cover-2.svg'),
+    'prod-keyboard': require('@/assets/img/cover/cover-3.svg'),
+    'prod-bag': require('@/assets/img/cover/cover-4.svg'),
+    'prod-plush': require('@/assets/img/cover/cover-5.svg'),
+    'prod-miku': require('@/assets/img/cover/cover-6.svg'),
+    'prod-case': require('@/assets/img/cover/cover-1.svg'),
+    'prod-hoodie': require('@/assets/img/cover/cover-2.svg'),
+    'prod-fan': require('@/assets/img/cover/cover-3.svg'),
+    'prod-badge': require('@/assets/img/cover/cover-4.svg'),
+};
+
+const mockProducts = [
+    { id: 'p1', title: '【pilipili限定】派蒙亚克力立牌 桌面摆件', coverSeed: 'prod-paimon', price: 39, originalPrice: 59, sold: 2.3, shop: 'pilipili官方店', tags: ['限定', '包邮'], category: '手办' },
+    { id: 'p2', title: '原神枫丹主题手办 玩偶模型礼盒', coverSeed: 'prod-fontaine', price: 129, sold: 8901, shop: '皮皮酱的小店', tags: ['正版', '礼盒'], category: '手办' },
+    { id: 'p3', title: '客制化机械键盘 87键 三模连接', coverSeed: 'prod-keyboard', price: 249, originalPrice: 329, sold: 1204, shop: '硬核外设铺', tags: ['三模', '热插拔'], category: '数码' },
+    { id: 'p4', title: '二次元痛包 双肩包 吧唧展示', coverSeed: 'prod-bag', price: 119, originalPrice: 159, sold: 4532, shop: '二次元优选铺', tags: ['痛包', '大容量'], category: '服饰' },
+    { id: 'p5', title: '派蒙毛绒挂件 钥匙扣 萌系玩偶', coverSeed: 'prod-plush', price: 29, sold: 12043, shop: 'pilipili官方店', tags: ['萌系', '包邮'], category: '手办' },
+    { id: 'p6', title: '初音未来 15周年纪念手办', coverSeed: 'prod-miku', price: 899, originalPrice: 1099, sold: 562, shop: '模玩之家', tags: ['纪念版', '限量'], category: '手办' },
+    { id: 'p7', title: '游戏主机收纳包 旅行硬壳保护箱', coverSeed: 'prod-case', price: 89, sold: 3210, shop: '硬核外设铺', tags: ['硬壳', '防摔'], category: '数码' },
+    { id: 'p8', title: '动漫主题卫衣 连帽加绒秋冬款', coverSeed: 'prod-hoodie', price: 159, originalPrice: 199, sold: 8760, shop: '二次元优选铺', tags: ['加绒', '秋冬'], category: '服饰' },
+    { id: 'p9', title: '夏日祭团扇 动漫周边 竹骨绢面', coverSeed: 'prod-fan', price: 19, sold: 23400, shop: 'pilipili官方店', tags: ['包邮', '新品'], category: '家居' },
+    { id: 'p10', title: '限定徽章套装 吧唧保护套 4枚入', coverSeed: 'prod-badge', price: 49, sold: 6540, shop: '模玩之家', tags: ['套装', '徽章'], category: '手办' },
+];
+
+const mockMallCategories = [
+    { name: '推荐', desc: '猜你喜欢', color: '#ff6699' },
+    { name: '数码', desc: '手机数码', color: '#3b9dff' },
+    { name: '服饰', desc: '服饰穿搭', color: '#9b6bff' },
+    { name: '美妆', desc: '美妆护肤', color: '#ffc53d' },
+    { name: '手办', desc: '动漫周边', color: '#28c76f' },
+    { name: '家居', desc: '家居生活', color: '#ff8f1f' },
+    { name: '食品', desc: '零食饮料', color: '#3ecfcf' },
+    { name: '更多', desc: '全部分类', color: '#9499a0' },
+];
+
+const mockProductReviews = [
+    { id: 'r1', user: '提瓦特旅行者', avatarSeed: 'reviewer1', text: '做工很精致，包装严实，和视频里看到的一样！店铺还送了小卡片，好评！', date: '10-20' },
+    { id: 'r2', user: '爱吃辣条的喵', avatarSeed: 'reviewer2', text: '比想象中还要大一点，放在桌面刚刚好，细节涂装到位。', date: '10-18' },
+    { id: 'r3', user: '深夜哲学家', avatarSeed: 'reviewer3', text: '物流很快，第二天就到了。包装里缓冲材料很足，没有任何磕碰。', date: '10-15' },
+];
+
+const mockOrders = [
+    { id: 'o1', shop: '皮皮酱的小店', status: 'pending', items: [{ id: 'p2', title: '原神枫丹主题手办 玩偶模型礼盒', coverSeed: 'prod-fontaine', price: 129, qty: 1 }], total: 129 },
+    { id: 'o2', shop: '二次元优选铺', status: 'done', items: [{ id: 'p4', title: '二次元痛包 双肩包 吧唧展示', coverSeed: 'prod-bag', price: 119, qty: 1 }], total: 119 },
+    { id: 'o3', shop: 'pilipili官方店', status: 'unshipped', items: [
+        { id: 'p1', title: '【pilipili限定】派蒙亚克力立牌 桌面摆件', coverSeed: 'prod-paimon', price: 39, qty: 2 },
+        { id: 'p9', title: '夏日祭团扇 动漫周边 竹骨绢面', coverSeed: 'prod-fan', price: 19, qty: 1 },
+    ], total: 97 },
+    { id: 'o4', shop: '模玩之家', status: 'unreceived', items: [{ id: 'p6', title: '初音未来 15周年纪念手办', coverSeed: 'prod-miku', price: 899, qty: 1 }], total: 899 },
+];
+
+// 给商品补上 coverUrl 字段（PC 端直接用 <img> 渲染）
+function withCoverUrl(p) {
+    return { ...p, coverUrl: mallCoverMap[p.coverSeed] || mallCoverMap['prod-paimon'] };
+}
+
 const responses = {
     'GET /category/getall': { code: 200, message: 'OK', data: mockChannels },
     'GET /search/hot/get': { code: 200, message: 'OK', data: mockTrendings },
@@ -705,6 +768,47 @@ export function mockRequest(method, url, data, config) {
     }
     if (key === 'POST /message/read') {
         response = { code: 200, message: '已读', data: null }
+    }
+
+    // Day 11 会员购：商品分类列表
+    if (key === 'GET /mall/categories') {
+        response = { code: 200, message: 'OK', data: mockMallCategories.slice() }
+    }
+
+    // Day 11 会员购：商品列表（支持 category / keyword / sort 过滤）
+    if (key === 'GET /mall/products') {
+        const category = String(config?.params?.category || '');
+        const keyword = String(config?.params?.keyword || '');
+        const sort = String(config?.params?.sort || '');
+        let list = mockProducts.slice();
+        if (category && category !== '推荐') list = list.filter(p => p.category === category);
+        if (keyword) list = list.filter(p => p.title.includes(keyword) || p.shop.includes(keyword));
+        if (sort === 'sales') list = list.slice().sort((a, b) => b.sold - a.sold);
+        else if (sort === 'priceAsc') list = list.slice().sort((a, b) => a.price - b.price);
+        else if (sort === 'priceDesc') list = list.slice().sort((a, b) => b.price - a.price);
+        response = { code: 200, message: 'OK', data: list.map(withCoverUrl) }
+    }
+
+    // Day 11 会员购：商品详情（路径带 id）
+    if (key.startsWith('GET /mall/product/')) {
+        const id = key.split('/').pop();
+        const product = mockProducts.find(p => p.id === id);
+        response = product
+            ? { code: 200, message: 'OK', data: withCoverUrl(product) }
+            : { code: 404, message: '商品不存在或已下架', data: null }
+    }
+
+    // Day 11 会员购：商品评价
+    if (key === 'GET /mall/reviews') {
+        response = { code: 200, message: 'OK', data: mockProductReviews.slice() }
+    }
+
+    // Day 11 会员购：我的订单
+    if (key === 'GET /mall/orders') {
+        const status = String(config?.params?.status || '');
+        let list = mockOrders.slice();
+        if (status && status !== 'all') list = list.filter(o => o.status === status);
+        response = { code: 200, message: 'OK', data: list }
     }
 
     // Day 10 创作中心 + 上传
