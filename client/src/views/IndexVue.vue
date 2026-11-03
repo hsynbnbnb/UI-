@@ -31,7 +31,7 @@
             <div class="header-channel-fixed-container" :class="isChannelDown ? 'header-channel-fixed-down' : ''"
                 @mouseenter="isChannelDown = true;" @mouseleave="isChannelDown = false;">
                 <div class="header-channel-fixed-left">
-                    <div class="left-fixed-channel">
+                    <div class="left-fixed-channel" @click="goSearch('动态')">
                         <!-- 动态：轨道图标（Day4-V1 更换，替代原 B 站风车图标） -->
                         <svg class="fixed-channel-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -42,7 +42,7 @@
                         </svg>
                         <span>动态</span>
                     </div>
-                    <div class="left-fixed-channel">
+                    <div class="left-fixed-channel" @click="goSearch('热门')">
                         <!-- 热门：上升趋势图标（Day4-V1 更换，替代原 B 站火焰图标） -->
                         <svg class="fixed-channel-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -57,51 +57,29 @@
                 <div class="header-channel-fixed-right">
                     <div class="header-channel-fixed-right-left">
                         <div class="left-top">
-                            <a :href="`/v/anime`" target="_blank" class="header-channel-fixed-right-item">番剧</a>
-                            <a :href="`/movie`" target="_blank" class="header-channel-fixed-right-item">电影</a>
-                            <a :href="`/v/guochuang`" target="_blank" class="header-channel-fixed-right-item">国创</a>
-                            <a :href="`/tv`" target="_blank" class="header-channel-fixed-right-item">电视剧</a>
-                            <a :href="`/variety`" target="_blank" class="header-channel-fixed-right-item">综艺</a>
-                            <a :href="`/documentary`" target="_blank" class="header-channel-fixed-right-item">纪录片</a>
-                            <a :href="`/v/${item.mcId}`" target="_blank" class="header-channel-fixed-right-item"
-                                v-for="(item, index) in channels.slice(2)" :key="index">
-                                {{ item.mcName }}
-                            </a>
-                            <!-- 这里的url要在VLOG标签做出来后重新修改，目前先暂定到生活日常区 -->
-                            <a :href="`/v/life/daily`" target="_blank" class="header-channel-fixed-right-item">VLOG</a>
-                            <a :href="`/v/life/funny`" target="_blank" class="header-channel-fixed-right-item">搞笑</a>
-                            <a :href="`/v/game/stand_alone`" target="_blank"
-                                class="header-channel-fixed-right-item">单机游戏</a>
-                            <a :href="`/love`" target="_blank" class="header-channel-fixed-right-item">公益</a>
-                            <a :href="`/mooc`" target="_blank" class="header-channel-fixed-right-item">公开课</a>
+                            <div
+                                class="header-channel-fixed-right-item"
+                                v-for="p in partitions"
+                                :key="p.name"
+                                @click="goSearch(p.name)"
+                            >{{ p.name }}</div>
                         </div>
                     </div>
                     <div class="header-channel-fixed-right-right">
-                        <a :href="`/read/home`" target="_blank" class="header-channel-fixed-right-item">专栏</a>
-                        <a :href="`/live`" target="_blank" class="header-channel-fixed-right-item">直播</a>
-                        <a :href="`/activity`" target="_blank" class="header-channel-fixed-right-item">活动</a>
-                        <a :href="`/cheese`" target="_blank" class="header-channel-fixed-right-item">课堂</a>
-                        <a :href="`/community`" target="_blank" class="header-channel-fixed-right-item"
-                            style="letter-spacing: 0px;">社区中心</a>
-                        <a :href="`/song`" target="_blank" class="header-channel-fixed-right-item"
-                            style="letter-spacing: 0px;">新歌热榜</a>
+                        <div class="header-channel-fixed-right-item" @click="goSearch('专栏')">专栏</div>
+                        <div class="header-channel-fixed-right-item" @click="goSearch('直播')">直播</div>
+                        <div class="header-channel-fixed-right-item" @click="goSearch('活动')">活动</div>
+                        <div class="header-channel-fixed-right-item" @click="goSearch('课堂')">课堂</div>
+                        <div class="header-channel-fixed-right-item" style="letter-spacing: 0px;" @click="goSearch('社区中心')">社区中心</div>
+                        <div class="header-channel-fixed-right-item" style="letter-spacing: 0px;" @click="goSearch('新歌热榜')">新歌热榜</div>
                     </div>
                     <div class="left-bottom">
-                        <a :href="`/v/anime`" target="_blank" class="header-channel-fixed-right-item">番剧</a>
-                        <a :href="`/movie`" target="_blank" class="header-channel-fixed-right-item">电影</a>
-                        <a :href="`/v/guochuang`" target="_blank" class="header-channel-fixed-right-item">国创</a>
-                        <a :href="`/tv`" target="_blank" class="header-channel-fixed-right-item">电视剧</a>
-                        <a :href="`/variety`" target="_blank" class="header-channel-fixed-right-item">综艺</a>
-                        <a :href="`/documentary`" target="_blank" class="header-channel-fixed-right-item">纪录片</a>
-                        <a :href="`/v/${item.mcId}`" target="_blank" class="header-channel-fixed-right-item"
-                            v-for="(item, index) in channels.slice(2)" :key="index">
-                            {{ item.mcName }}
-                        </a>
-                        <a :href="`/v/life/daily`" target="_blank" class="header-channel-fixed-right-item">VLOG</a>
-                        <a :href="`/v/life/funny`" target="_blank" class="header-channel-fixed-right-item">搞笑</a>
-                        <a :href="`/v/game/stand_alone`" target="_blank" class="header-channel-fixed-right-item">单机游戏</a>
-                        <a :href="`/love`" target="_blank" class="header-channel-fixed-right-item">公益</a>
-                        <a :href="`/mooc`" target="_blank" class="header-channel-fixed-right-item">公开课</a>
+                        <div
+                            class="header-channel-fixed-right-item"
+                            v-for="p in partitions"
+                            :key="p.name"
+                            @click="goSearch(p.name)"
+                        >{{ p.name }}</div>
                     </div>
                 </div>
                 <div class="header-channel-fixed-arrow">
@@ -341,6 +319,8 @@ export default {
             loadingMore: false,
             // 刷新次数
             refreshTime: 0,
+            // 分区列表（对齐 Mobileapp partitions）
+            partitions: [],
         }
     },
     computed: {
@@ -350,6 +330,19 @@ export default {
         }
     },
     methods: {
+        // 跳转到搜索结果页（与手机端分区点击行为一致）
+        goSearch(keyword) {
+            this.$router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
+        },
+
+        // 获取分区列表
+        async getPartitions() {
+            const res = await this.$get("/partition/list");
+            if (res.data && res.data.data) {
+                this.partitions = res.data.data;
+            }
+        },
+
         // 请求
         // 获取游客随机推荐
         async getRandomVideos() {
@@ -469,6 +462,7 @@ export default {
     },
     created() {
         this.getRandomVideos();
+        this.getPartitions();
     },
     async mounted() {
         // 初始化头图的监听器
@@ -791,202 +785,62 @@ header .window-cover {
 }
 
 .header-channel-fixed-right {
-    display: inline-grid;
+    display: flex;
     flex: 1;
-    height: 100%;
+    align-items: center;
+    gap: 10px;
     position: relative;
+    min-width: 0;
 }
 
 .header-channel-fixed-right-item {
-    height: var(--item_height);
-    line-height: var(--item_height);
+    flex: none;
+    height: 28px;
+    line-height: 28px;
+    padding: 0 12px;
     border: 1px solid var(--line_light);
     background: var(--graph_bg_thin);
     border-radius: 6px;
     text-align: center;
     cursor: pointer;
     color: var(--text2);
+    font-size: 14px;
+    letter-spacing: 2px;
+    white-space: nowrap;
 }
 
 .header-channel-fixed-right-item:hover {
+    color: var(--brand_pink);
     background: var(--graph_bg_thick);
     transition: background 0.2s;
 }
 
-.left-top .header-channel-fixed-right-item:nth-of-type(23),
-.left-top .header-channel-fixed-right-item:nth-of-type(24),
-.left-top .header-channel-fixed-right-item:nth-of-type(26),
-.left-bottom .header-channel-fixed-right-item:nth-of-type(23),
-.left-bottom .header-channel-fixed-right-item:nth-of-type(24),
-.left-bottom .header-channel-fixed-right-item:nth-of-type(26) {
-    letter-spacing: 0px;
+/* 右侧固定入口（专栏/直播等）紧跟分区之后，用 auto 边距推到最右 */
+.header-channel-fixed-right-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    flex: none;
 }
 
-.header-channel-fixed-right-left {
-    display: inline-grid;
-    position: relative;
+.header-channel-fixed-right-left,
+.header-channel-fixed-right .left-bottom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
 }
 
 .header-channel-fixed-right-left .left-top {
-    display: inline-grid;
-    grid-template-rows: repeat(2, 1fr);
-    position: relative;
-    grid-auto-flow: column;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.header-channel-fixed-right-right {
-    display: inline-grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-flow: column;
-    grid-template-rows: var(--item_height) var(--item_height);
-    grid-column: span 3;
-}
-
+/* 收起态只显示第一行（分区），展开态显示全部；左/右两侧均用单行 flex 铺开 */
 .header-channel-fixed-right .left-bottom {
-    display: inline-grid;
-    grid-template-rows: repeat(1, 1fr);
-    position: relative;
-}
-
-.header-channel-fixed-right .left-bottom,
-.header-channel-fixed-right-right,
-.header-channel-fixed-right-left .left-top,
-.header-channel-fixed-right {
-    grid-gap: 14px 10px;
-}
-
-@media (max-width: 1366.9px) {
-    .header-channel-fix {
-        --left_width: 128px;
-        --left_width_item: 64px;
-    }
-
-    .header-channel-fixed-right {
-        grid-column: span 12;
-        grid-template-columns: repeat(12, 1fr);
-    }
-
-    .header-channel-fixed-right-left {
-        grid-column: span 9;
-        grid-template-columns: repeat(9, 1fr);
-    }
-
-    .header-channel-fixed-right .left-bottom {
-        grid-column: span 12;
-        grid-template-columns: repeat(12, 1fr);
-    }
-
-    .header-channel-fixed-right-left .left-top {
-        grid-column: span 9;
-        grid-template-columns: repeat(9, 1fr);
-    }
-
-    .header-channel-fixed-right .left-bottom,
-    .header-channel-fixed-right-right,
-    .header-channel-fixed-right-left .left-top,
-    .header-channel-fixed-right {
-        font-size: 13px;
-        grid-gap: 14px 8px;
-    }
-
-    .left-top .header-channel-fixed-right-item:nth-of-type(1n + 19) {
-        display: none !important;
-    }
-
-    .left-bottom .header-channel-fixed-right-item:nth-of-type(-1n + 18) {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1367px) and (max-width: 1700.9px) {
-    .header-channel-fixed-right {
-        grid-column: span 14;
-        grid-template-columns: repeat(14, 1fr);
-    }
-
-    .header-channel-fixed-right-left {
-        grid-column: span 11;
-        grid-template-columns: repeat(11, 1fr);
-    }
-
-    .header-channel-fixed-right .left-bottom {
-        grid-column: span 14;
-        grid-template-columns: repeat(14, 1fr);
-    }
-
-    .header-channel-fixed-right-left .left-top {
-        grid-column: span 11;
-        grid-template-columns: repeat(11, 1fr);
-    }
-
-    .left-top .header-channel-fixed-right-item:nth-of-type(1n + 23) {
-        display: none !important;
-    }
-
-    .left-bottom .header-channel-fixed-right-item:nth-of-type(-1n + 22) {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1701px) and (max-width: 2199.9px) {
-    .header-channel-fix {
-        --left_width: 160px;
-        --left_width_item: 80px;
-    }
-
-    .header-channel-fixed-right {
-        grid-column: span 15;
-        grid-template-columns: repeat(15, 1fr);
-    }
-
-    .header-channel-fixed-right-left {
-        grid-column: span 12;
-        grid-template-columns: repeat(12, 1fr);
-    }
-
-    .header-channel-fixed-right .left-bottom {
-        grid-column: span 15;
-        grid-template-columns: repeat(15, 1fr);
-    }
-
-    .header-channel-fixed-right-left .left-top {
-        grid-column: span 12;
-        grid-template-columns: repeat(12, 1fr);
-    }
-
-    .left-top .header-channel-fixed-right-item:nth-of-type(1n + 25) {
-        display: none !important;
-    }
-
-    .left-bottom .header-channel-fixed-right-item:nth-of-type(-1n + 24) {
-        display: none !important;
-    }
-}
-
-@media (min-width: 2200px) {
-    .header-channel-fix {
-        --left_width: 160px;
-        --left_width_item: 80px;
-    }
-
-    .header-channel-fixed-right {
-        grid-column: span 17;
-        grid-template-columns: repeat(17, 1fr);
-    }
-
-    .header-channel-fixed-right-left {
-        grid-column: span 14;
-        grid-template-columns: repeat(14, 1fr);
-    }
-
-    .header-channel-fixed-right .left-bottom {
-        display: none;
-    }
-
-    .header-channel-fixed-right-left .left-top {
-        grid-column: span 14;
-        grid-template-columns: repeat(14, 1fr);
-    }
+    display: none;
 }
 
 .header-channel-fixed-arrow {

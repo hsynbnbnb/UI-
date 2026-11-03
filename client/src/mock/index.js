@@ -315,6 +315,20 @@ function nowTimeStr() {
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// ==================== Day 12 频道分区（对齐 Mobileapp partitions） ====================
+// 以手机端分区为准：推荐/动画/游戏/音乐/舞蹈/影视/知识/科技/美食
+const mockPartitions = [
+    { name: '推荐', icon: '🏠', color: '#ff6699' },
+    { name: '动画', icon: '📺', color: '#9b6bff' },
+    { name: '游戏', icon: '🎮', color: '#3b9dff' },
+    { name: '音乐', icon: '🎵', color: '#28c76f' },
+    { name: '舞蹈', icon: '💃', color: '#ff6699' },
+    { name: '影视', icon: '🎬', color: '#ff8f1f' },
+    { name: '知识', icon: '📖', color: '#3b9dff' },
+    { name: '科技', icon: '⚙️', color: '#61666d' },
+    { name: '美食', icon: '🍜', color: '#ffc53d' },
+];
+
 // ==================== Day 11 会员购（商城）Mock ====================
 // 数据模型与 Mobileapp 的 src/types/index.ts 保持一致：
 //   Product { id, title, coverSeed, price, originalPrice?, sold, shop, tags, category }
@@ -768,6 +782,11 @@ export function mockRequest(method, url, data, config) {
     }
     if (key === 'POST /message/read') {
         response = { code: 200, message: '已读', data: null }
+    }
+
+    // Day 12 频道分区列表（对齐 Mobileapp partitions）
+    if (key === 'GET /partition/list') {
+        response = { code: 200, message: 'OK', data: mockPartitions.slice() }
     }
 
     // Day 11 会员购：商品分类列表
