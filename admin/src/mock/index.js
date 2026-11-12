@@ -5,12 +5,13 @@ const ADMIN = {
 }
 
 const MENU = [
-    { id: 'dashboard', name: '仪表盘', path: '/dashboard', icon: 'Odometer' },
+    { id: 'dashboard', name: '首页', path: '/dashboard', icon: 'HomeFilled' },
     { id: 'review', name: '视频审核', path: '/review', icon: 'VideoCamera' },
     { id: 'content', name: '内容管理', path: '/content', icon: 'Document' },
     { id: 'data', name: '数据统计', path: '/data', icon: 'DataLine' },
     { id: 'report', name: '举报处理', path: '/report', icon: 'Warning' },
     { id: 'appeal', name: '申诉处理', path: '/appeal', icon: 'Bell' },
+    { id: 'mall', name: '会员购管理', path: '/mall', icon: 'ShoppingCart' },
     { id: 'user', name: '用户管理', path: '/user', icon: 'User' },
     { id: 'role', name: '角色权限', path: '/role', icon: 'Lock' }
 ]
@@ -49,15 +50,33 @@ const ADMIN_REPORTS = Array.from({ length: 8 }, (_, i) => ({
 const ADMIN_APPEALS = Array.from({ length: 6 }, (_, i) => ({
     id: 200 + i, vid: 16 + i, reason: '误判申诉', status: i % 2, createTime: '2026-10-' + String(20 + i).padStart(2, '0') + ' 14:00'
 }))
+// 用户数据（含账号密码，供用户管理页增删改查）
 const ADMIN_USERS = [
-    { uid: 1, nickname: 'pilipili 用户', username: 'pilipili', role: 0, state: 0, regTime: '2026-01-01' },
-    { uid: 31, nickname: '前端练习生', username: 'pilipili31', role: 0, state: 0, regTime: '2026-02-01' },
-    { uid: 16, nickname: '提瓦特观测站长', username: 'pilipili16', role: 0, state: 0, regTime: '2026-03-01' }
+    { uid: 1, nickname: 'pilipili 用户', username: 'pilipili', password: '123456', phone: '138****8888', email: 'pilipili@example.com', role: 0, state: 0, regTime: '2026-01-01' },
+    { uid: 31, nickname: '前端练习生', username: 'pilipili31', password: '123456', phone: '139****6666', email: 'fe@example.com', role: 0, state: 0, regTime: '2026-02-01' },
+    { uid: 16, nickname: '提瓦特观测站长', username: 'pilipili16', password: '123456', phone: '137****1111', email: 'tiwat@example.com', role: 0, state: 0, regTime: '2026-03-01' },
+    { uid: 25, nickname: '泛动数据库', username: 'pilipili25', password: '123456', phone: '136****2222', email: 'db@example.com', role: 0, state: 0, regTime: '2026-04-01' },
+    { uid: 36, nickname: 'Canvas 研究所', username: 'pilipili36', password: '123456', phone: '135****3333', email: 'canvas@example.com', role: 0, state: 0, regTime: '2026-05-01' }
 ]
 const ADMIN_ROLES = [
     { id: 1, name: '超级管理员', desc: '全部权限', permissions: ['*'] },
     { id: 2, name: '内容审核员', desc: '审核视频/评论', permissions: ['review:video', 'review:comment'] },
     { id: 3, name: '普通运营', desc: '查看数据', permissions: ['data:view'] }
+]
+
+// 会员购商品数据（字段对齐手机端/电脑端会员购 Product）
+const MALL_COVER = 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png'
+const MALL_PRODUCTS = [
+    { id: 'p1', title: '【pilipili限定】派蒙亚克力立牌 桌面摆件', coverSeed: 'prod-paimon', coverUrl: MALL_COVER, price: 39, originalPrice: 59, sold: 2.3, shop: 'pilipili官方店', tags: ['限定', '包邮'], category: '手办', status: 1 },
+    { id: 'p2', title: '原神枫丹主题手办 玩偶模型礼盒', coverSeed: 'prod-fontaine', coverUrl: MALL_COVER, price: 129, originalPrice: null, sold: 8901, shop: '皮皮酱的小店', tags: ['正版', '礼盒'], category: '手办', status: 1 },
+    { id: 'p3', title: '客制化机械键盘 87键 三模连接', coverSeed: 'prod-keyboard', coverUrl: MALL_COVER, price: 249, originalPrice: 329, sold: 1204, shop: '硬核外设铺', tags: ['三模', '热插拔'], category: '数码', status: 1 },
+    { id: 'p4', title: '二次元痛包 双肩包 吧唧展示', coverSeed: 'prod-bag', coverUrl: MALL_COVER, price: 119, originalPrice: 159, sold: 4532, shop: '二次元优选铺', tags: ['痛包', '大容量'], category: '服饰', status: 1 },
+    { id: 'p5', title: '派蒙毛绒挂件 钥匙扣 萌系玩偶', coverSeed: 'prod-plush', coverUrl: MALL_COVER, price: 29, originalPrice: null, sold: 12043, shop: 'pilipili官方店', tags: ['萌系', '包邮'], category: '手办', status: 0 },
+    { id: 'p6', title: '初音未来 15周年纪念手办', coverSeed: 'prod-miku', coverUrl: MALL_COVER, price: 899, originalPrice: 1099, sold: 562, shop: '模玩之家', tags: ['纪念版', '限量'], category: '手办', status: 1 },
+    { id: 'p7', title: '游戏主机收纳包 旅行硬壳保护箱', coverSeed: 'prod-case', coverUrl: MALL_COVER, price: 89, originalPrice: null, sold: 3210, shop: '硬核外设铺', tags: ['硬壳', '防摔'], category: '数码', status: 1 },
+    { id: 'p8', title: '动漫主题卫衣 连帽加绒秋冬款', coverSeed: 'prod-hoodie', coverUrl: MALL_COVER, price: 159, originalPrice: 199, sold: 8760, shop: '二次元优选铺', tags: ['加绒', '秋冬'], category: '服饰', status: 1 },
+    { id: 'p9', title: '夏日祭团扇 动漫周边 竹骨绢面', coverSeed: 'prod-fan', coverUrl: MALL_COVER, price: 19, originalPrice: null, sold: 23400, shop: 'pilipili官方店', tags: ['包邮', '新品'], category: '家居', status: 0 },
+    { id: 'p10', title: '限定徽章套装 吧唧保护套 4枚入', coverSeed: 'prod-badge', coverUrl: MALL_COVER, price: 49, originalPrice: null, sold: 6540, shop: '模玩之家', tags: ['套装', '徽章'], category: '手办', status: 1 }
 ]
 
 const responses = {
@@ -135,6 +154,96 @@ export function mockRequest(method, url, data, config) {
     if (key === 'GET /admin/appeal/list') response = { code: 200, message: 'OK', data: ADMIN_APPEALS }
     if (key === 'GET /admin/user/list') response = { code: 200, message: 'OK', data: ADMIN_USERS }
     if (key === 'GET /admin/role/list') response = { code: 200, message: 'OK', data: ADMIN_ROLES }
+
+    // ============ 会员购商品管理（手机端 + 电脑端会员购共用） ============
+    if (key === 'GET /admin/mall/products') {
+        const keyword = String(config && config.params && config.params.keyword || '')
+        const category = String(config && config.params && config.params.category || '')
+        const status = config && config.params && config.params.status !== undefined && config.params.status !== ''
+            ? Number(config.params.status) : null
+        let list = MALL_PRODUCTS.slice()
+        if (category) list = list.filter(p => p.category === category)
+        if (keyword) list = list.filter(p => p.title.includes(keyword) || p.shop.includes(keyword))
+        if (status !== null) list = list.filter(p => p.status === status)
+        response = { code: 200, message: 'OK', data: list }
+    }
+    if (key === 'GET /admin/mall/categories') {
+        response = { code: 200, message: 'OK', data: ['手办', '数码', '服饰', '家居', '食品', '美妆'] }
+    }
+    if (key === 'POST /admin/mall/product/add') {
+        const body = data || {}
+        const np = {
+            id: 'p' + (Date.now() % 100000),
+            title: body.title || '新商品',
+            coverSeed: 'prod-paimon',
+            coverUrl: MALL_COVER,
+            price: Number(body.price) || 0,
+            originalPrice: body.originalPrice ? Number(body.originalPrice) : null,
+            sold: Number(body.sold) || 0,
+            shop: body.shop || 'pilipili官方店',
+            tags: Array.isArray(body.tags) ? body.tags : [],
+            category: body.category || '手办',
+            status: body.status !== undefined ? Number(body.status) : 1
+        }
+        MALL_PRODUCTS.unshift(np)
+        response = { code: 200, message: '添加成功', data: np }
+    }
+    if (key === 'POST /admin/mall/product/update') {
+        const body = data || {}
+        const idx = MALL_PRODUCTS.findIndex(p => p.id === body.id)
+        if (idx !== -1) {
+            MALL_PRODUCTS[idx] = {
+                ...MALL_PRODUCTS[idx],
+                title: body.title !== undefined ? body.title : MALL_PRODUCTS[idx].title,
+                price: body.price !== undefined ? Number(body.price) : MALL_PRODUCTS[idx].price,
+                originalPrice: body.originalPrice !== undefined ? (body.originalPrice ? Number(body.originalPrice) : null) : MALL_PRODUCTS[idx].originalPrice,
+                sold: body.sold !== undefined ? Number(body.sold) : MALL_PRODUCTS[idx].sold,
+                shop: body.shop !== undefined ? body.shop : MALL_PRODUCTS[idx].shop,
+                category: body.category !== undefined ? body.category : MALL_PRODUCTS[idx].category,
+                tags: body.tags !== undefined ? body.tags : MALL_PRODUCTS[idx].tags,
+                status: body.status !== undefined ? Number(body.status) : MALL_PRODUCTS[idx].status
+            }
+        }
+        response = { code: 200, message: '更新成功', data: MALL_PRODUCTS[idx] }
+    }
+    if (key === 'POST /admin/mall/product/delete') {
+        const id = data && data.id
+        const idx = MALL_PRODUCTS.findIndex(p => p.id === id)
+        if (idx !== -1) MALL_PRODUCTS.splice(idx, 1)
+        response = { code: 200, message: '删除成功', data: null }
+    }
+
+    // ============ 用户账号密码管理 ============
+    if (key === 'POST /admin/user/update') {
+        const body = data || {}
+        const idx = ADMIN_USERS.findIndex(u => u.uid === Number(body.uid))
+        if (idx !== -1) {
+            if (body.nickname !== undefined) ADMIN_USERS[idx].nickname = body.nickname
+            if (body.username !== undefined) ADMIN_USERS[idx].username = body.username
+            if (body.phone !== undefined) ADMIN_USERS[idx].phone = body.phone
+            if (body.email !== undefined) ADMIN_USERS[idx].email = body.email
+            if (body.role !== undefined) ADMIN_USERS[idx].role = Number(body.role)
+        }
+        response = { code: 200, message: '更新成功', data: ADMIN_USERS[idx] }
+    }
+    if (key === 'POST /admin/user/reset-password') {
+        const body = data || {}
+        const idx = ADMIN_USERS.findIndex(u => u.uid === Number(body.uid))
+        if (idx !== -1) ADMIN_USERS[idx].password = body.password || '123456'
+        response = { code: 200, message: '密码已重置', data: null }
+    }
+    if (key === 'POST /admin/user/change-state') {
+        const body = data || {}
+        const idx = ADMIN_USERS.findIndex(u => u.uid === Number(body.uid))
+        if (idx !== -1) ADMIN_USERS[idx].state = body.state !== undefined ? Number(body.state) : 0
+        response = { code: 200, message: '操作成功', data: null }
+    }
+    if (key === 'POST /admin/user/delete') {
+        const uid = data && Number(data.uid)
+        const idx = ADMIN_USERS.findIndex(u => u.uid === uid)
+        if (idx !== -1) ADMIN_USERS.splice(idx, 1)
+        response = { code: 200, message: '删除成功', data: null }
+    }
 
     if (!response) response = { code: 200, message: 'OK', data: null }
     return Promise.resolve({

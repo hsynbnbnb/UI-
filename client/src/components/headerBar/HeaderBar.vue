@@ -204,23 +204,30 @@
                                 <div class="count-num">{{ handleNum(user.fansCount) }}</div>
                                 <div class="count-text">粉丝</div>
                             </a>
-                            <a :href="`/space/${user.uid}/dynamic`" target="_blank" class="counts-item">
+                            <a :href="`/moments`" target="_blank" class="counts-item">
                                 <div class="count-num">{{ handleNum(0) }}</div>
                                 <div class="count-text">动态</div>
                             </a>
                         </div>
-                        <div class="single-item middle" @click="openNewPage('/account')">
+                        <div class="single-item middle" @click="openNewPage('/account/profile')">
                             <div class="single-item-left">
                                 <el-icon size="16"><User /></el-icon>
                                 <span>个人中心</span>
                             </div>                            
                             <el-icon><ArrowRightBold /></el-icon>
                         </div>
-                        <div class="single-item middle" @click="openNewPage('/platform/upload-manager')">
+                        <div class="single-item middle" @click="openNewPage('/platform/upload')">
                             <div class="single-item-left">
                                 <el-icon size="16"><Document /></el-icon>
                                 <span>投稿管理</span>
                             </div>                            
+                            <el-icon><ArrowRightBold /></el-icon>
+                        </div>
+                        <div class="single-item middle" @click="openNewPage('/orders')">
+                            <div class="single-item-left">
+                                <el-icon size="16"><Tickets /></el-icon>
+                                <span>我的订单</span>
+                            </div>
                             <el-icon><ArrowRightBold /></el-icon>
                         </div>
                         <div class="single-item middle" @click="noPage">
@@ -248,7 +255,7 @@
                 <VPopover pop-style="padding-top: 17px;">
                     <template #reference>
                         <div class="red-num--dynamic" v-if="user.uid && msgUnread > 0">{{ msgUnread > 99 ? '99+' : msgUnread }}</div>
-                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? openNewPage('/message') : dialogVisible = true;">
+                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? openNewPage('/message/reply') : dialogVisible = true;">
                             <i class="iconfont icon-xinfeng"></i>
                             <span>消息</span>
                         </div>
@@ -275,7 +282,7 @@
                                     </span>
                                 </div>
                                 <div class="message-inner-list__item" @click="openNewPage('/message/system')">
-                                    系统消息
+                                    系统通知
                                     <span class="notify-number" v-if="this.$store.state.msgUnread[3] > 0">
                                         {{ this.$store.state.msgUnread[3] <= 99 ? this.$store.state.msgUnread[3] : '99+' }}
                                     </span>
@@ -284,6 +291,12 @@
                                     我的消息
                                     <span class="notify-number" v-if="this.$store.state.msgUnread[4] > 0">
                                         {{ this.$store.state.msgUnread[4] <= 99 ? this.$store.state.msgUnread[4] : '99+' }}
+                                    </span>
+                                </div>
+                                <div class="message-inner-list__item" @click="openNewPage('/message/dynamic')">
+                                    动态
+                                    <span class="notify-number" v-if="this.$store.state.msgUnread[5] > 0">
+                                        {{ this.$store.state.msgUnread[5] <= 99 ? this.$store.state.msgUnread[5] : '99+' }}
                                     </span>
                                 </div>
                             </div>
@@ -300,7 +313,7 @@
             <div class="v-popover-wrap">
                 <VPopover pop-style="padding-top: 17px;">
                     <template #reference>
-                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? noPage() : dialogVisible = true;">
+                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? openNewPage('/moments') : dialogVisible = true;">
                             <!-- 动态：轨道图标（Day4-V1 更换，替代原 B 站风车图标） -->
                             <svg class="right-entry-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -328,7 +341,7 @@
             <div class="v-popover-wrap">
                 <VPopover :pop-style="this.$store.state.isLogin ? 'padding-top: 17px; margin-left: -100px;' : 'padding-top: 17px;'">
                     <template #reference>
-                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? noPage() : dialogVisible = true;">
+                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? openFavlist() : dialogVisible = true;">
                             <i class="iconfont icon-shoucang"></i>
                             <span>收藏</span>
                         </div>
@@ -349,7 +362,7 @@
             <div class="v-popover-wrap">
                 <VPopover :pop-style="this.$store.state.isLogin ? 'padding-top: 17px; margin-left: -50px;' : 'padding-top: 17px;'">
                     <template #reference>
-                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? noPage() : dialogVisible = true;">
+                        <div class="right-entry--outside" @click="this.$store.state.isLogin ? openNewPage('/history') : dialogVisible = true;">
                             <i class="iconfont icon-lishijilu"></i>
                             <span>历史</span>
                         </div>
@@ -454,10 +467,10 @@
             user() {
                 return this.$store.state.user;
             },
-            // 计算消息未读数
+            // 计算消息未读数（6 类：reply/at/love/system/whisper/dynamic）
             msgUnread() {
                 let count = 0;
-                for (var i = 0; i < 5; i++) {
+                for (var i = 0; i < 6; i++) {
                     count += this.$store.state.msgUnread[i];
                 }
                 return count;
@@ -507,7 +520,8 @@
                     this.openNewPage("/search");
                 } else {
                     // 否则就跳搜索详情页
-                    this.openNewPage(`/search/video?keyword=${input}`);
+                    // W14：特殊字符（& / # / 空格）必须编码，否则 query 会被截断
+                    this.openNewPage(`/search/video?keyword=${encodeURIComponent(input)}`);
                 }
             },
 
@@ -604,6 +618,16 @@
             // 打开新标签页
             openNewPage(route) {
                 window.open(this.$router.resolve(route).href, '_blank');
+            },
+
+            // 打开我的收藏页（跳转到个人空间收藏夹）
+            openFavlist() {
+                const uid = this.$store.state.user.uid;
+                if (!uid) {
+                    this.dialogVisible = true;
+                    return;
+                }
+                this.openNewPage(`/space/${uid}/favlist`);
             },
 
             // 处理大于一万的数字

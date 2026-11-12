@@ -8,7 +8,7 @@ import axios from 'axios'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import { get, post } from './network/request'
+import { get, post, put, del } from './network/request'
 import './assets/css/base.css'
 
 const app = createApp(App)
@@ -17,6 +17,9 @@ app.config.globalProperties.$message = ElMessage
 app.config.globalProperties.$axios = axios
 app.config.globalProperties.$get = get
 app.config.globalProperties.$post = post
+// 预留：后端购物车 PUT/DELETE /cart/{id} 接入点，当前无页面调用
+app.config.globalProperties.$put = put
+app.config.globalProperties.$del = del
 
 app.use(ElementPlus, { locale: zhCn })
 

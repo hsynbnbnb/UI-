@@ -618,6 +618,15 @@ export default {
         },
     },
     methods: {
+        // 安全比例：分母非法(<=0/NaN/Infinity)或分子非有限值时返回 0，
+        // 否则把 v/total 钳制到 [0,1]，避免 scaleX(NaN)/Infinity/负值/>1
+        ratio(v, total) {
+            if (!Number.isFinite(total) || total <= 0 || !Number.isFinite(v)) {
+                return 0;
+            }
+            return Math.min(1, Math.max(0, v / total));
+        },
+
         //////// 请求 /////////
         // 增加一个播放量
         async increasePlay() {
@@ -765,8 +774,11 @@ export default {
             const durationInSeconds = this.$refs.videoPlayer.duration;
             // 使用720p视频的估计平均比特率（假设 1Mbps）
             const averageBitrate720p = 1000000;
-            // 计算估计的视频大小（单位：字节）
-            this.videoSize = durationInSeconds * averageBitrate720p / 8;
+            // 计算估计的视频大小（单位：字节）；时长未就绪(NaN/Infinity/负)时兜底为 0，
+            // 避免后续 currByte / 缓冲网速出现 NaN
+            this.videoSize = Number.isFinite(durationInSeconds) && durationInSeconds > 0
+                ? durationInSeconds * averageBitrate720p / 8
+                : 0;
             if (!this.pause) {
                 try {
                     await this.$refs.videoPlayer.play();
@@ -1227,7 +1239,7 @@ export default {
         // 外部控制的时间跳转（双击弹幕）
         jumpTimePointAndPlay(time) {
             // 计算进度条的位置
-            this.currentPer = time / this.duration;
+            this.currentPer = this.ratio(time, this.duration);
             this.currentTime = time;
             this.$refs.videoPlayer.currentTime = time;
             this.initDanmuIndex(time);
@@ -1264,7 +1276,7 @@ export default {
             }
             this.currentTime = time;
             // 计算进度条的位置
-            this.currentPer = time / this.duration;
+            this.currentPer = this.ratio(time, this.duration);
             // 展示该时间段的弹幕
             if (this.danmuOpen) {
                 this.displayDanmus(time);
@@ -1278,7 +1290,7 @@ export default {
             const buffered = video.buffered;
             if (buffered.length > 0) {
                 // 计算已缓冲的百分比并更新缓冲进度条
-                this.bufferPer = buffered.end(buffered.length - 1) / this.duration;
+                this.bufferPer = this.ratio(buffered.end(buffered.length - 1), this.duration);
             }
         },
 
@@ -1286,7 +1298,7 @@ export default {
         updateBufferSpeed() {
             const buffered = this.$refs.videoPlayer.buffered;
             if (buffered && buffered.length > 0) {
-                let currByte = buffered.end(buffered.length - 1) / this.duration * this.videoSize;
+                let currByte = this.ratio(buffered.end(buffered.length - 1), this.duration) * this.videoSize;
                 let differ = currByte - this.lastByte;    // 在1s内加载了这么多字节
                 this.bufferSpeed = (differ / 1000).toFixed(2);
                 this.lastByte = currByte;

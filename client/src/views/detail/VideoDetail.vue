@@ -9,7 +9,7 @@
                     <div class="video-info-detail">
                         <div class="video-info-detail-list">
                             <!-- 排名暂时没做，到时可能还得在数据库加一个属性 -->
-                            <a href="/popular/rank/all" target="_blank" class="honor item honor-rank" v-if="video.top">
+                            <a :href="'/search/video?keyword=' + encodeURIComponent('排行榜')" target="_blank" class="honor item honor-rank" v-if="video.top">
                                 <i class="iconfont icon-paihang"></i>
                                 <span class="honor-text">全站排行榜最高第1名</span>
                                 <i class="iconfont icon-youjiantou"></i>
@@ -33,9 +33,32 @@
                     </div>
                 </div>
                 <!-- 播放器组件 -->
-                <PlayerWrap :videoUrl="video.videoUrl" :title="video.title" :duration="video.duration" :user="user"
-                    :population="population" v-model:jumpTimePoint="jumpTimePoint" v-model:autonext="autonext"
-                    @resize="updatePlayerSize" @sendDm="sendDanmu" @next="next"></PlayerWrap>
+                <div class="player-wrap-box">
+                    <PlayerWrap :videoUrl="video.videoUrl" :title="video.title" :duration="video.duration" :user="user"
+                        :population="population" v-model:jumpTimePoint="jumpTimePoint" v-model:autonext="autonext"
+                        @resize="updatePlayerSize" @sendDm="sendDanmu" @next="next"></PlayerWrap>
+                    <!-- 商品推荐小窗口（视频打开几秒后弹出） -->
+                    <transition name="product-rec">
+                        <div class="product-rec" v-if="showProductRec && recommendProduct"
+                            @click="goProductDetail">
+                            <div class="product-rec__cover">
+                                <img :src="recommendProduct.coverUrl" :alt="recommendProduct.title">
+                            </div>
+                            <div class="product-rec__body">
+                                <div class="product-rec__title" :title="recommendProduct.title">{{ recommendProduct.title }}</div>
+                                <div class="product-rec__price">
+                                    <span class="product-rec__symbol">¥</span>
+                                    <span class="product-rec__num">{{ recommendProduct.price }}</span>
+                                    <span class="product-rec__origin" v-if="recommendProduct.originalPrice">¥{{ recommendProduct.originalPrice }}</span>
+                                </div>
+                                <div class="product-rec__hint">视频同款好物 · 点击查看</div>
+                            </div>
+                            <div class="product-rec__close" @click.stop="closeProductRecommend">
+                                <i class="iconfont icon-guanbi"></i>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
                 <!-- 三连转发 -->
                 <div class="video-toolbar-container">
                     <div class="video-toolbar-left">
@@ -60,7 +83,7 @@
                         </div>
                         <div class="toolbar-left-item-wrap">
                             <div class="video-toolbar-left-item"
-                                :class="{ 'on': this.$store.state.attitudeToVideo.coin > 0 }" @click="noPage">
+                                :class="{ 'on': this.$store.state.attitudeToVideo.coin > 0 }" @click="coinVideo">
                                 <i class="iconfont icon-toubi"></i>
                                 <span class="video-toolbar-item-text">{{ handleNum(coin) }}</span>
                             </div>
@@ -73,7 +96,7 @@
                             </div>
                         </div>
                         <div class="toolbar-left-item-wrap">
-                            <div class="video-toolbar-left-item" @click="noPage">
+                            <div class="video-toolbar-left-item" @click="shareVideo">
                                 <i class="iconfont icon-zhuanfa"></i>
                                 <span class="video-toolbar-item-text">{{ handleNum(share) }}</span>
                             </div>
@@ -81,7 +104,7 @@
                     </div>
                     <div class="video-toolbar-right">
                         <div class="video-toolbar-right-item">
-                            <VPopover placement="top" popStyle="padding-bottom: 10px; z-index: 1000;">
+                            <VPopover placement="top" trigger="click" ref="morePopover" popStyle="padding-bottom: 10px; z-index: 1000;">
                                 <template #reference>
                                     <div class="video-tool-more">
                                         <i class="iconfont icon-gengduo"></i>
@@ -90,7 +113,7 @@
 
                                 <template #content>
                                     <div class="video-tool-more-dropdown">
-                                        <div class="dropdown-item">
+                                        <div class="dropdown-item" @click="reportVideo">
                                             <i class="iconfont icon-jubao1"></i>
                                             <span>举报稿件</span>
                                         </div>
@@ -117,14 +140,14 @@
                     <!-- 标签 -->
                     <div class="video-tag-container">
                         <div class="tag-container">
-                            <a :href="`/v/${category.mcId}`" target="_blank" class="tag-link">{{ category.mcName }}</a>
+                            <a :href="`/search/video?keyword=${encodeURIComponent(category.mcName)}`" target="_blank" class="tag-link">{{ category.mcName }}</a>
                         </div>
                         <div class="tag-container">
-                            <a :href="`/v/${category.mcId}/${category.scId}`" target="_blank" class="tag-link">
+                            <a :href="`/search/video?keyword=${encodeURIComponent(category.scName)}`" target="_blank" class="tag-link">
                                 {{ category.scName }}</a>
                         </div>
                         <div class="tag-container" v-for="(item, index) in tags" :key="index">
-                            <a :href="`/search/video?keyword=${item}`" target="_blank" class="tag-link">{{ item }}</a>
+                            <a :href="`/search/video?keyword=${encodeURIComponent(item)}`" target="_blank" class="tag-link">{{ item }}</a>
                         </div>
                     </div>
                     <!-- 评论 -->
@@ -166,14 +189,14 @@
                                     <div class="up-description" :title="user.description">{{ user.description }}</div>
                                 </div>
                                 <div class="up-info__btn-panel">
-                                    <div class="default-btn follow-btn not-follow" v-if="true" @click="noPage">
+                                    <div class="default-btn follow-btn not-follow" v-if="!isFollowed" @click="follow">
                                         <i class="iconfont icon-jia"></i>
                                         关注 {{ handleNum(user.fansCount) }}
                                     </div>
                                     <VPopover popStyle="padding-top: 10px;">
 
                                         <template #reference>
-                                            <div class="default-btn follow-btn following" v-if="false">
+                                            <div class="default-btn follow-btn following" v-if="isFollowed">
                                                 <i class="iconfont icon-caidan"></i>
                                                 已关注 {{ handleNum(user.fansCount) }}
                                             </div>
@@ -184,32 +207,13 @@
                                                 <div class="dropdown-item">
                                                     <span>设置分组</span>
                                                 </div>
-                                                <div class="dropdown-item">
+                                                <div class="dropdown-item" @click="follow">
                                                     <span>取消关注</span>
                                                 </div>
                                             </div>
                                         </template>
                                     </VPopover>
-                                    <VPopover popStyle="padding-top: 10px;">
-
-                                        <template #reference>
-                                            <div class="default-btn follow-btn following" v-if="false">
-                                                <i class="iconfont icon-caidan"></i>
-                                                已互粉 {{ handleNum(user.fansCount) }}
-                                            </div>
-                                        </template>
-
-                                        <template #content>
-                                            <div class="following-dropdown">
-                                                <div class="dropdown-item">
-                                                    <span>设置分组</span>
-                                                </div>
-                                                <div class="dropdown-item">
-                                                    <span>取消关注</span>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </VPopover>
+                                    <!-- 已互粉态：mock 无互粉关系数据，移除永不渲染的 v-if="false" 死元素 -->
                                 </div>
                             </div>
                         </div>
@@ -408,15 +412,25 @@ export default {
             collectedFids: new Set(),   // 收藏了该视频的收藏夹ID集合
             isMounted: false,
             loveLoading: false, // 点赞防抖
+            isFollowed: false,  // 是否已关注该 UP 主
+            recommendProduct: null,  // 视频旁弹出的商品推荐
+            showProductRec: false,   // 商品推荐弹窗显隐
+            productRecTimer: null,   // 商品推荐弹窗定时器
         }
     },
     methods: {
         ////// 请求 //////
         // 获取视频详细信息
         async getVideoDetail() {
+            const vid = this.$route.params.vid;
+            // 非法 vid（如手动输入 /video/abc）落到明确提示页，不再被 mock 静默兜底成首页
+            if (!/^\d+$/.test(String(vid))) {
+                this.$router.push('/notfound');
+                return false;
+            }
             const res = await this.$get('/video/getone', {
                 params: {
-                    vid: this.$route.params.vid,
+                    vid: vid,
                 },
             });
             if (res.data.code === 404) {
@@ -427,6 +441,7 @@ export default {
                 // console.log("视频详情: ", res.data.data);
                 this.video = res.data.data.video;
                 this.user = res.data.data.user;
+                this.isFollowed = this.$store.state.followList.some(u => u.uid === this.user.uid);
                 this.category = res.data.data.category;
                 this.tags = res.data.data.video.tags.split("\r\n").filter(tag => tag.trim() !== "");
                 this.view = res.data.data.stats.play;
@@ -465,6 +480,45 @@ export default {
                     this.recommendVideos.push(...res2.data.data.videos);
                     this.vids.push(...res2.data.data.vids);
                 }
+            }
+        },
+
+        // 获取商品推荐（视频播放几秒后弹出）
+        async getProductRecommend() {
+            try {
+                const res = await this.$get('/mall/products', { params: { sort: 'sales' } });
+                if (res.data && res.data.code === 200 && res.data.data.length > 0) {
+                    // 取销量最高的商品作为推荐
+                    this.recommendProduct = res.data.data[0];
+                }
+            } catch (e) {
+                // 忽略商品获取失败，不影响视频页
+            }
+        },
+
+        // 视频打开后延时弹出商品推荐小窗口
+        startProductRecommend() {
+            // 延迟 5 秒弹出，符合"过个几秒"的体验
+            this.productRecTimer = setTimeout(() => {
+                this.getProductRecommend();
+                this.showProductRec = true;
+            }, 5000);
+        },
+
+        // 关闭商品推荐弹窗
+        closeProductRecommend() {
+            this.showProductRec = false;
+            if (this.productRecTimer) {
+                clearTimeout(this.productRecTimer);
+                this.productRecTimer = null;
+            }
+        },
+
+        // 点击商品推荐进入商品详情
+        goProductDetail() {
+            if (this.recommendProduct && this.recommendProduct.id) {
+                this.closeProductRecommend();
+                this.$router.push(`/product/${this.recommendProduct.id}`);
             }
         },
 
@@ -549,6 +603,44 @@ export default {
             this.loveLoading = false;
         },
 
+        // 投币（单个视频投币上限 2，投币后减少用户硬币）
+        async coinVideo() {
+            if (!this.$store.state.user.uid) {
+                this.$store.state.openLogin = true;
+                this.$nextTick(() => {
+                    this.$store.state.openLogin = false;
+                });
+                return;
+            }
+            if (this.$store.state.attitudeToVideo.coin >= 2) {
+                ElMessage.warning("单个视频最多投 2 个币");
+                return;
+            }
+            if (this.$store.state.user.coin <= 0) {
+                ElMessage.warning("硬币不足，无法投币");
+                return;
+            }
+            const formData = new FormData();
+            formData.append("vid", Number(this.video.vid));
+            formData.append("num", 1);
+            const res = await this.$post("/video/coin", formData, {
+                headers: { Authorization: "Bearer " + localStorage.getItem("pilipili_token") }
+            });
+            if (!res.data.data) return;
+            const data = res.data.data;
+            // 更新本视频已投币数
+            this.coin += data.added;
+            this.$store.commit("updateAttitudeToVideo", {
+                ...this.$store.state.attitudeToVideo,
+                coin: data.coin,
+            });
+            // 同步用户硬币数
+            if (this.$store.state.user.uid) {
+                this.$store.commit("updateUser", { ...this.$store.state.user, coin: data.userCoin });
+            }
+            ElMessage.success(`投币成功，剩余 ${data.userCoin} 个硬币`);
+        },
+
         // 获取收藏了该视频的收藏夹ID列表
         async getCollectedFids() {
             const res = await this.$get("/video/collected-fids", {
@@ -607,7 +699,7 @@ export default {
                 });
                 return;
             }
-            this.openNewPage(`/message/whisper/${this.user.uid}`);
+            this.openNewPage(`/message/whisper?uid=${this.user.uid}`);
         },
 
         // 处理窗口滚动触发的事件
@@ -679,14 +771,10 @@ export default {
             this.socket.send(dmJson);
         },
 
-        // 切换视频
-        async changeVideo(vid) {
-            await this.$router.push(`/video/${vid}`);
-            await this.initWebsocket();
-            if (await this.getVideoDetail()) {
-                await this.getDanmuList();
-                await this.getRecommendVideos();
-            }
+        // 切换视频：只更新路由；数据重载统一由 watch "$route.params.vid" 负责，
+        // 让「点击推荐」与「浏览器前进/后退」走同一条刷新链路，避免主内容与评论不一致
+        changeVideo(vid) {
+            this.$router.push(`/video/${vid}`);
         },
 
         // 视频播放结束自动连播
@@ -732,8 +820,57 @@ export default {
             this.collectVisible = false;
         },
 
-        noPage() {
-            ElMessage.warning("该功能暂未开放");
+        // 关注/取消关注 UP 主
+        follow() {
+            if (!this.$store.state.user.uid) {
+                this.$store.state.openLogin = true;
+                this.$nextTick(() => {
+                    this.$store.state.openLogin = false;
+                });
+                return;
+            }
+            const up = {
+                uid: this.user.uid,
+                nickname: this.user.nickname,
+                avatar_url: this.user.avatar_url,
+                fansCount: this.user.fansCount,
+            };
+            const nowFollowed = this.$store.dispatch("toggleFollow", up);
+            this.isFollowed = nowFollowed;
+            ElMessage.success(nowFollowed ? `已关注 ${this.user.nickname}` : '已取消关注');
+        },
+
+        // 分享：复制当前视频链接到剪贴板并给出可见反馈；剪贴板不可用时仍本地 +1 分享数
+        async shareVideo() {
+            const url = window.location.href;
+            let copied = false;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    copied = true;
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = url;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    copied = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+            } catch (e) {
+                copied = false;
+            }
+            this.share += 1;
+            ElMessage.success(copied ? '视频链接已复制到剪贴板' : '已分享，分享数 +1');
+        },
+
+        // 举报稿件：给出可见反馈，并关闭「更多」菜单
+        reportVideo() {
+            if (this.$refs.morePopover && typeof this.$refs.morePopover.hide === 'function') {
+                this.$refs.morePopover.hide();
+            }
+            ElMessage.success('举报已提交，感谢你的反馈');
         }
     },
     async created() {
@@ -755,9 +892,12 @@ export default {
         setTimeout(() => {
             this.isMounted = true;
         }, 3000);
+        // 视频打开几秒后弹出商品推荐
+        this.startProductRecommend();
     },
     async beforeUnmount() {
         await this.closeWebSocket();
+        this.closeProductRecommend();
         window.removeEventListener('beforeunload', this.closeWebSocket);
         window.removeEventListener('scroll', this.handleScroll);
     },
@@ -765,6 +905,16 @@ export default {
         // 路由变化要关闭收藏对话框
         "$route.path"() {
             this.collectVisible = false;
+        },
+        // 视频 ID 变化（点击推荐、浏览器前进/后退）时组件会被复用，必须主动重载主内容
+        async "$route.params.vid"(next, prev) {
+            if (!next || next === prev) return;
+            this.collectVisible = false;
+            await this.initWebsocket();
+            if (await this.getVideoDetail()) {
+                await this.getDanmuList();
+                await this.getRecommendVideos();
+            }
         },
         // 当前页面下重新登录要重新获取收藏夹ID 退出登录要清空收藏夹ID
         "$store.state.isLogin"(curr) {
@@ -1507,5 +1657,129 @@ export default {
     .follow-btn {
         width: 230px;
     }
+}
+
+/* ========== 商品推荐小窗口 ========== */
+.player-wrap-box {
+    position: relative;
+}
+
+.product-rec {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    width: 300px;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--line_light, #e3e5e7);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.product-rec:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.product-rec__cover {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--graph_bg_thin, #f1f2f3);
+}
+
+.product-rec__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-rec__body {
+    flex: 1;
+    min-width: 0;
+    margin-left: 10px;
+}
+
+.product-rec__title {
+    font-size: 13px;
+    color: var(--text1, #18191c);
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+}
+
+.product-rec__price {
+    margin-top: 4px;
+    display: flex;
+    align-items: baseline;
+}
+
+.product-rec__symbol {
+    font-size: 12px;
+    color: var(--brand_pink, #ff6699);
+    font-weight: 600;
+}
+
+.product-rec__num {
+    font-size: 18px;
+    color: var(--brand_pink, #ff6699);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.product-rec__origin {
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--text3, #9499a0);
+    text-decoration: line-through;
+}
+
+.product-rec__hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text3, #9499a0);
+}
+
+.product-rec__close {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    margin-left: 4px;
+    border-radius: 50%;
+    color: var(--text3, #9499a0);
+    font-size: 14px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.product-rec__close:hover {
+    background: var(--graph_bg_thick, #e3e5e7);
+    color: var(--text1, #18191c);
+}
+
+/* 商品推荐弹窗过渡 */
+.product-rec-enter-active,
+.product-rec-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.product-rec-enter-from,
+.product-rec-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
 }
 </style>

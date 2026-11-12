@@ -111,7 +111,7 @@ let inTimer;  // 节流计时器
 .v-popover {
     position: absolute;
     transition: .3s;
-    z-index: 1;
+    z-index: 1200;
 }
 
 .v-popover-content {

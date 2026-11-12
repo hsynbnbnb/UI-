@@ -203,14 +203,20 @@ export default {
         },
 
         // 展开更多子评论
+        // 联调对齐：旧 mock 直接返回 CommentTree，真实后端统一包 {code,message,data}，两种都兼容；
+        // 回填本次请求的 rootId，保证 CommentTree.updateComment 能按 id 定位到对应根评论。
         async getMoreComment() {
+            const rootId = this.replies[0].rootId;
             const res = await this.$get("/comment/reply/get-more", {
                 params: {
-                    id: this.replies[0].rootId
+                    id: rootId
                 }
             });
-
-            return res.data;
+            const payload = res && res.data;
+            const body = payload && typeof payload.code !== "undefined" ? payload.data : payload;
+            return body && typeof body === "object"
+                ? { ...body, id: rootId, replies: Array.isArray(body.replies) ? body.replies : [] }
+                : { id: rootId, replies: [] };
         },
 
         // 删除评论前的最后通牒

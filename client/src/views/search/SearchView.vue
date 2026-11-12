@@ -48,6 +48,9 @@ import SearchInput from '@/components/search/SearchInput.vue';
 
 export default {
     name: "SearchView",
+    // router 的 props 函数仍会传入 keyword；这里改为从 $route.query 派生，
+    // 用 inheritAttrs:false 避免未声明的 prop 作为 attribute 落到根元素
+    inheritAttrs: false,
     components: {
         HeaderBar,
         SearchInput,
@@ -60,12 +63,14 @@ export default {
             ],
         }
     },
-    props: {
-        // 从路由参数获取
-        keyword: String,
-    },
     computed: {
-        // 根据当前路由计算路由列表下标
+        // 关键词统一从 $route.query.keyword 派生（与 router props、SearchInput 的
+        // watch '$route.query.keyword' 同源）；写入只由 SearchInput.goSearch 负责，
+        // SearchView 只读不覆盖，避免两边重复写 URL
+        keyword() {
+            return this.$route.query.keyword || '';
+        },
+        // tab（视频/用户）由当前子路由 path 派生，刷新/前进后退都一致
         routerIndex() {
             return this.router.findIndex(item => this.$route.path.startsWith(item.path));
         }
@@ -86,10 +91,11 @@ export default {
             this.$store.commit("updateMatchingCount", res.data.data);
         },
 
-        // 跳转对应类型
+        // 跳转对应类型：对象形式只切 path，保留 keyword / page / sort 等全部 query，
+        // 不再用字符串 "?keyword=" 拼接覆盖其它筛选参数（C13 筛选/tab 状态落 URL）
         changeNav(path) {
             if (this.$route.path.startsWith(path)) return;
-            this.$router.push(`${path}?keyword=${this.keyword}`);
+            this.$router.push({ path, query: { ...this.$route.query } });
         }
     },
     created() {

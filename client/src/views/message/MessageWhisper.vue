@@ -51,7 +51,12 @@ export default {
             const res = await get('/message/whisper/list');
             if (res.data.code === 200) {
                 this.chats = res.data.data || [];
-                if (this.chats.length) this.selectChat(this.chats[0]);
+                // 从空间 / 用户卡片 / 视频页点「发消息」会带 ?uid=，需定位到该 UP 主的会话
+                const uid = Number(this.$route.query.uid);
+                const target = uid
+                    ? this.chats.find(c => Number(c.chat.userId) === uid || Number(c.user && c.user.uid) === uid)
+                    : null;
+                if (this.chats.length) this.selectChat(target || this.chats[0]);
             }
         },
         async selectChat(c) {

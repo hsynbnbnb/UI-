@@ -44,6 +44,8 @@ export default createStore({
         matchingCount: [0, 0],
         // 购物车商品列表（字段对齐 Mobileapp 的 CartItem）
         cartItems: [],
+        // 已关注 UP 主列表
+        followList: [],
     },
     mutations: {
         // 退出登录或登录过期时初始化个别数据
@@ -115,6 +117,11 @@ export default createStore({
         // 更新购物车列表
         updateCartItems(state, items) {
             state.cartItems = items;
+        },
+
+        // 更新已关注 UP 主列表
+        updateFollowList(state, list) {
+            state.followList = list;
         },
 
         // 处理websocket事件
@@ -490,6 +497,33 @@ export default createStore({
             const items = state.cartItems.filter(i => !i.selected);
             commit('updateCartItems', items);
             localStorage.setItem('pilipili_cart', JSON.stringify(items));
+        },
+
+        // ========== 关注 UP 主 ==========
+        // 从 localStorage 加载关注列表
+        loadFollowList({ commit }) {
+            try {
+                const raw = localStorage.getItem('pilipili_follow');
+                const list = raw ? JSON.parse(raw) : [];
+                commit('updateFollowList', Array.isArray(list) ? list : []);
+            } catch (e) {
+                commit('updateFollowList', []);
+            }
+        },
+
+        // 是否已关注
+        // 关注/取消关注 UP 主（up 为用户对象，需含 uid/nickname/avatar 等）
+        toggleFollow({ commit, state }, up) {
+            const list = state.followList.slice();
+            const idx = list.findIndex(u => u.uid === up.uid);
+            if (idx >= 0) {
+                list.splice(idx, 1);
+            } else {
+                list.unshift(up);
+            }
+            commit('updateFollowList', list);
+            localStorage.setItem('pilipili_follow', JSON.stringify(list));
+            return idx < 0; // 返回是否已关注
         },
 
         // 初始化websocket实例

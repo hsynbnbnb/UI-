@@ -94,7 +94,7 @@ export default {
                 });
                 return;
             }
-            this.openNewPage(`/message/whisper/${this.user.uid}`);
+            this.openNewPage(`/message/whisper?uid=${this.user.uid}`);
         },
 
         // 打开新标签页

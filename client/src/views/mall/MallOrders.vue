@@ -3,6 +3,7 @@
         <HeaderBar :isFixHeaderBar="true" :isShowSearchInput="false"></HeaderBar>
 
         <div class="orders__head">
+            <span class="orders__back" @click="goMall">‹ 返回商城</span>
             <span class="orders__title">我的订单</span>
         </div>
 
@@ -108,6 +109,7 @@ export default {
         toast(msg) { ElMessage.info(msg); },
         setTab(key) { this.active = key; this.getOrders(); },
         goProduct(id) { this.$router.push(`/product/${id}`); },
+        goMall() { this.$router.push({ path: '/mall', query: this.$route.query }); },
         coverOf(seed) { return coverMap[seed] || coverMap['prod-paimon']; },
         statusClass(status) {
             return {
@@ -119,9 +121,15 @@ export default {
             }[status];
         },
         async getOrders() {
-            const res = await this.$get('/mall/orders', { params: { status: this.active } });
-            if (res.data && res.data.code === 200) {
-                this.orders = res.data.data;
+            // 订单唯一数据源为后端 GET /mall/orders，前端不再读/写本地订单（C14/W27/M13）。
+            // 留好接口：后端接入订单状态机后，此处响应结构改成 {list, total} 也能兼容。
+            try {
+                const res = await this.$get('/mall/orders', { params: { status: this.active } });
+                const payload = res && res.data;
+                const d = payload && payload.code === 200 ? payload.data : null;
+                this.orders = Array.isArray(d) ? d : (d && Array.isArray(d.list) ? d.list : []);
+            } catch (e) {
+                this.orders = [];
             }
         }
     },
@@ -141,6 +149,19 @@ export default {
 .orders__head {
     padding-top: 84px;
     text-align: center;
+    position: relative;
+}
+.orders__back {
+    position: absolute;
+    left: 24px;
+    top: 84px;
+    line-height: 28px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+}
+.orders__back:hover {
+    color: var(--brand_pink);
 }
 .orders__title {
     font-size: 22px;

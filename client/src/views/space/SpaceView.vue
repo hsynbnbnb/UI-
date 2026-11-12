@@ -17,7 +17,7 @@
                             <div class="h-info">
                                 <div class="avatar-container">
                                     <VAvatar :img="user.avatar_url" :size="60" :auth="user.auth"></VAvatar>
-                                    <a v-if="user.uid === this.$store.state.user.uid" href="/account/avatar" target="_blank" class="avatar-cover">更换头像</a>
+                                    <a v-if="user.uid === this.$store.state.user.uid" href="/account/profile" target="_blank" class="avatar-cover">更换头像</a>
                                 </div>
                                 <div class="h-basic">
                                     <div class="basic-top">
@@ -35,7 +35,9 @@
                             </div>
                         </div>
                         <div class="h-action" v-if="user.uid !== this.$store.state.user.uid">
-                            <div class="h-f-btn h-follow" @click="noPage">关注</div>
+                            <div class="h-f-btn h-follow" :class="{ 'is-followed': isFollowed }" @click="toggleFollow">
+                                {{ isFollowed ? '已关注' : '关注' }}
+                            </div>
                             <div class="h-f-btn h-message" @click="createChat">发消息</div>
                             <div class="be-dropdown h-add-to-black">
                                 <i class="iconfont icon-gengduo"></i>
@@ -209,6 +211,10 @@ export default {
                     part[3] === 'favlist' ? 4 :
                     part[3] === 'setting' ? 5 :
                     part[3] === 'fans' ? part[4] === 'follow' ? 6 : 7 : 0
+        },
+        // 是否已关注该空间主人（与 VideoDetail 共用 store.followList）
+        isFollowed() {
+            return this.$store.state.followList.some(u => u.uid === this.user.uid);
         }
     },
     methods: {
@@ -268,7 +274,8 @@ export default {
                 });
                 return;
             }
-            this.openNewPage(`/message/whisper/${this.user.uid}`);
+            // 路由只有 /message/:type（单段），目标会话通过 query 传递，由 MessageWhisper 定位
+            this.openNewPage(`/message/whisper?uid=${this.user.uid}`);
         },
 
         // 打开新标签页
@@ -311,25 +318,45 @@ export default {
             return handleLevel(exp);
         },
 
-        noPage() {
-            ElMessage.warning("该功能暂未开放");
+        // 关注/取消关注空间主人：复用 store.toggleFollow，本地联动粉丝计数
+        toggleFollow() {
+            if (!this.$store.state.user.uid) {
+                this.$store.state.openLogin = true;
+                this.$nextTick(() => {
+                    this.$store.state.openLogin = false;
+                });
+                return;
+            }
+            const up = {
+                uid: this.user.uid,
+                nickname: this.user.nickname,
+                avatar_url: this.user.avatar_url,
+                fansCount: this.user.fansCount,
+            };
+            const nowFollowed = !this.isFollowed;
+            this.$store.dispatch("toggleFollow", up);
+            this.user.fansCount = Math.max(0, (this.user.fansCount || 0) + (nowFollowed ? 1 : -1));
+            ElMessage.success(nowFollowed ? `已关注 ${this.user.nickname}` : '已取消关注');
         },
     },
     async created() {
         if (this.$route.path === "/space" || this.$route.path === "/space/") {
-            if (localStorage.getItem("pilipili_token")) {
-                try {
-                    // 解析JWT获取当前用户uid
-                    const w = localStorage.getItem("pilipili_token").split('.')[1];
-                    const info = JSON.parse(atob(w));
-                    this.$router.push(`/space/${info.sub}`);
-                } catch (e) {
-                    console.log("atob exception:", e)
-                    this.$router.push("/");
+            // 裸 /space：安全解析 JWT。token 为空 / 非 JWT（如 mock 的 "mock-pilipili-token" 无点号）
+            // / 载荷损坏时都不再抛 atob 异常把用户踢回首页，而是回退到 store 当前用户 uid 或默认 uid。
+            let uid = this.$store.state.user && this.$store.state.user.uid;
+            const token = localStorage.getItem("pilipili_token");
+            if (token) {
+                const parts = String(token).split('.');
+                if (parts.length === 3) {
+                    try {
+                        const info = JSON.parse(atob(parts[1]));
+                        uid = info.sub || info.uid || uid;
+                    } catch (e) {
+                        // JWT 载荷损坏：忽略，继续使用回退 uid
+                    }
                 }
-            } else {
-                this.$router.push("/");
             }
+            this.$router.replace(`/space/${uid || 16}`);
         } else {
             // 判断路由参数合法性
             const uid = Number(this.$route.params.uid);
@@ -614,6 +641,12 @@ export default {
 
 .h-follow:hover {
     background: #ff85ad;
+}
+
+.h-follow.is-followed {
+    background: rgba(0, 0, 0, .45);
+    box-shadow: 0 0 0 2px hsla(0,0%,100%,.3);
+    color: #fff;
 }
 
 .h-add-to-black {

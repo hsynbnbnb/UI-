@@ -226,6 +226,7 @@ function mockRootComment(id, uid, content, love, createTime, replies) {
         id, vid: 16, uid, rootId: 0, parentId: 0, toUserId: 0,
         content, love, bad: 0, createTime, isTop: 0, isDeleted: 0,
         user: mockCommentUser(uid),
+        count: replies.length,
         replies
     };
 }
@@ -314,6 +315,31 @@ function nowTimeStr() {
     const p = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+
+// ==================== Day 14 投币状态（跨请求持久，投币上限 2） ====================
+let mockCoinState = { vid: null, coins: 0 };  // 当前已投币数（单视频）
+
+// ==================== Day 15 动态广场（对齐 Mobileapp moments） ====================
+const mockMoments = [
+    { id: 'm1', author: { name: '皮皮酱', avatarSeed: 'pipi', fans: '12.8万' }, time: '10分钟前', type: 'image', text: '新买的周边手办到货啦！开箱分享给大家~包装和细节都太棒了，点赞收藏不迷路！', images: ['moment-1', 'moment-2', 'moment-3'], shares: 12, comments: 34, likes: 128, liked: false },
+    { id: 'm2', author: { name: '皮皮酱', avatarSeed: 'pipi', fans: '12.8万' }, time: '3小时前', type: 'video', text: '新视频上线！初雪山顶湖畔日出全记录，求三连~', videoCover: 'moment-video', videoDuration: '05:46', shares: 8, comments: 56, likes: 342, liked: false },
+    { id: 'm3', author: { name: '硬核老张', avatarSeed: 'laozhang', fans: '45.2万' }, time: '昨天 21:14', type: 'image', text: '工作室新到了三把键盘，明天出对比测评，猜猜我最推荐哪把？', images: ['moment-4', 'moment-5'], shares: 23, comments: 89, likes: 567, liked: false },
+    { id: 'm4', author: { name: '奶黄包不熬夜', avatarSeed: 'naibao', fans: '23.1万' }, time: '2天前', type: 'image', text: '烘焙店新品试吃！这个芝士挞的流心绝了，配方下周发动态~', images: ['moment-6', 'moment-7', 'moment-8', 'moment-9'], shares: 15, comments: 42, likes: 289, liked: true },
+];
+
+// ==================== Day 13 收藏夹（对齐电脑端收藏页截图） ====================
+// 收藏夹字段：fid/uid/type(1默认)/visible(1公开)/title/count/description/playCount
+const mockFavorites = [
+    { fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 552, description: '默认收藏夹', playCount: 213 },
+    { fid: 2, uid: 1, type: 0, visible: 1, title: '开车', count: 1, description: '', playCount: 8 },
+    { fid: 3, uid: 1, type: 0, visible: 1, title: '神作', count: 28, description: '值得反复看的作品', playCount: 156 },
+    { fid: 4, uid: 1, type: 0, visible: 1, title: '冰！', count: 115, description: '冷门佳作合集', playCount: 320 },
+    { fid: 5, uid: 1, type: 0, visible: 1, title: '计算机基础', count: 24, description: '计算机入门教程', playCount: 98 },
+    { fid: 6, uid: 1, type: 0, visible: 1, title: '项目/科研', count: 51, description: '项目与科研相关', playCount: 210 },
+    { fid: 7, uid: 1, type: 0, visible: 1, title: 'life', count: 1, description: '', playCount: 3 },
+    { fid: 8, uid: 1, type: 0, visible: 1, title: '经典', count: 20, description: '经典永流传', playCount: 87 },
+    { fid: 9, uid: 1, type: 0, visible: 1, title: '磁盘', count: 17, description: '', playCount: 42 },
+];
 
 // ==================== Day 12 频道分区（对齐 Mobileapp partitions） ====================
 // 以手机端分区为准：推荐/动画/游戏/音乐/舞蹈/影视/知识/科技/美食
@@ -404,11 +430,7 @@ const responses = {
     'GET /favorite/get-all/user': {
         code: 200,
         message: 'OK',
-        data: [
-            { fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 12 },
-            { fid: 2, uid: 1, type: 0, visible: 1, title: '前端学习', count: 8 },
-            { fid: 3, uid: 1, type: 0, visible: 0, title: '私密收藏夹', count: 3 }
-        ]
+        data: mockFavorites.map(f => ({ ...f }))
     },
     'GET /comment/get-like-and-dislike': {
         code: 200,
@@ -523,18 +545,46 @@ export function mockRequest(method, url, data, config) {
         }
     }
 
-    // Day 6 点赞/点踩：按 isLove/isSet 返回最新态度
+    // Day 6 点赞/点踩：按 isLove/isSet 返回最新态度（点赞上限 1）
     if (key === 'POST /video/love-or-not') {
         const isLove = data && typeof data.get === 'function' ? Number(data.get('isLove')) : 1;
         const isSet = data && typeof data.get === 'function' ? Number(data.get('isSet')) : 1;
+        const vid = data && typeof data.get === 'function' ? Number(data.get('vid')) : null;
+        // 切换视频时重置投币状态
+        if (vid !== mockCoinState.vid) {
+            mockCoinState = { vid, coins: 0 };
+        }
         response = {
             code: 200,
             message: 'OK',
             data: {
                 love: isLove && isSet ? 1 : 0,
                 unlove: !isLove && isSet ? 1 : 0,
-                coin: 12,
+                coin: mockCoinState.coins,
                 collect: 0
+            }
+        }
+    }
+
+    // Day 14 投币：投币数上限 2，投币后减少用户硬币
+    if (key === 'POST /video/coin') {
+        const vid = data && typeof data.get === 'function' ? Number(data.get('vid')) : null;
+        const num = data && typeof data.get === 'function' ? Number(data.get('num')) : 1;
+        if (vid !== mockCoinState.vid) {
+            mockCoinState = { vid, coins: 0 };
+        }
+        const canCoin = Math.min(num, 2 - mockCoinState.coins);
+        if (canCoin > 0) {
+            mockCoinState.coins += canCoin;
+            mockUser.coin = Math.max(0, mockUser.coin - canCoin);
+        }
+        response = {
+            code: 200,
+            message: 'OK',
+            data: {
+                coin: mockCoinState.coins,       // 本视频已投币数
+                userCoin: mockUser.coin,          // 用户剩余硬币数
+                added: canCoin                    // 本次实际投币数
             }
         }
     }
@@ -553,11 +603,7 @@ export function mockRequest(method, url, data, config) {
         response = {
             code: 200,
             message: 'OK',
-            data: [
-                { fid: 1, uid: 1, type: 1, visible: 1, title: '默认收藏夹', count: 12 },
-                { fid: 2, uid: 1, type: 0, visible: 1, title: '前端学习', count: 8 },
-                { fid: 3, uid: 1, type: 0, visible: 0, title: '私密收藏夹', count: 3 }
-            ]
+            data: mockFavorites.map(f => ({ ...f }))
         }
     }
 
@@ -626,10 +672,13 @@ export function mockRequest(method, url, data, config) {
         };
         // 同步进 Mock 池，保证刷新后仍在（一级评论插入最前）
         if (rootId === 0) {
-            mockRootComments.unshift({ ...newComment, replies: [] });
+            mockRootComments.unshift({ ...newComment, count: 0, replies: [] });
         } else {
             const root = mockRootComments.find(c => c.id === rootId);
-            if (root) root.replies.push(newComment);
+            if (root) {
+                root.replies.push(newComment);
+                root.count = root.replies.length;
+            }
         }
         response = {
             code: 200,
@@ -787,6 +836,11 @@ export function mockRequest(method, url, data, config) {
     // Day 12 频道分区列表（对齐 Mobileapp partitions）
     if (key === 'GET /partition/list') {
         response = { code: 200, message: 'OK', data: mockPartitions.slice() }
+    }
+
+    // Day 15 动态广场列表
+    if (key === 'GET /moment/list') {
+        response = { code: 200, message: 'OK', data: mockMoments.slice() }
     }
 
     // Day 11 会员购：商品分类列表

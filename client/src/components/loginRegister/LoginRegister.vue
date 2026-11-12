@@ -11,7 +11,7 @@
             <canvas id="cvs" width="360" height="360"></canvas>
             <canvas id="cvs2" width="360" height="360" @click="playVideo" loop></canvas>
         </div>
-        <div class="login-register-container">
+        <div class="login-register-container" ref="loginContainer">
             <el-tabs v-model="activeTab" stretch class="login-tabs" @tab-click="handleClick">
                 <el-tab-pane label="登录" name="login" lazy>
                     <div v-if="loginMode === 'account'" class="login-box">
@@ -107,6 +107,18 @@ export default {
             return /^1[3-9]\d{9}$/.test(this.phoneNumber);
         }
     },
+    watch: {
+        // 切换登录模式（账号/验证码）或标签页时，把容器滚动位置重置到顶部，
+        // 避免保留上一模式的滚动偏移导致新内容被裁切
+        loginMode() {
+            this.$nextTick(() => {
+                const container = this.$refs.loginContainer;
+                if (container) {
+                    container.scrollTop = 0;
+                }
+            });
+        }
+    },
     mounted() {
         this.videoElement = this.$refs.loginVideo;
         this.init();
@@ -128,7 +140,32 @@ export default {
             const playVideo = () => {
                 requestAnimationFrame(playVideo);   // 每一帧之间调用 playVideo 函数，实现连续播放
                 const { width, height } = ctx.canvas;
-                ctx.drawImage(this.videoElement, 0, 0, width, height);   // 从视频元素中绘制图像数据到画布上
+                // 画布固定 360x360，整帧拉伸会把非 1:1 的源视频压变形（object-fit 只作用于
+                // video 元素渲染，drawImage 取的是原始帧）。这里按目标宽高比对源帧做居中
+                // 裁切（cover）后再绘制以保持比例；视频元数据未就绪时回退整帧绘制，不破坏动画。
+                const vw = this.videoElement.videoWidth;
+                const vh = this.videoElement.videoHeight;
+                if (vw > 0 && vh > 0) {
+                    const targetRatio = width / height;
+                    let sx, sy, sw, sh;
+                    if (vw / vh > targetRatio) {
+                        // 源更宽：按高度裁切，左右居中
+                        sh = vh;
+                        sw = vh * targetRatio;
+                        sx = (vw - sw) / 2;
+                        sy = 0;
+                    } else {
+                        // 源更高或相等：按宽度裁切，上下居中
+                        sw = vw;
+                        sh = vw / targetRatio;
+                        sx = 0;
+                        sy = (vh - sh) / 2;
+                    }
+                    ctx.drawImage(this.videoElement, sx, sy, sw, sh, 0, 0, width, height);
+                } else {
+                    // 视频尺寸尚未就绪，沿用原整帧绘制作为兜底
+                    ctx.drawImage(this.videoElement, 0, 0, width, height);
+                }
                 const data = ctx.getImageData(0, 0, width, height).data;
                 ctx2.clearRect(0, 0, width, height);    // 清除第二个画布，以便在每一帧之间重新绘制像素数据
                 const bl = 12;
@@ -359,6 +396,7 @@ export default {
 <style scoped>
 .login-register {
     position: relative;
+    z-index: 1;
     display: flex;
     width: 100%;
     height: 100%;
@@ -371,13 +409,16 @@ export default {
 
 .video-wrapper {
     visibility: hidden;
-    position: absolute;
+    position: relative;
     width: 360px;
     height: 360px;
+    overflow: hidden;
 }
 
 .video-wrapper video {
-    object-fit: fill;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
     display: block;
 }
 
@@ -395,8 +436,10 @@ export default {
 .login-register-container {
     display: block;
     width: 360px;
-    height: 360px;
+    min-height: 360px;
+    max-height: min(80vh, 560px);
     padding: 30px 28px;
+    overflow-y: auto;
 }
 
 .login-tabs {

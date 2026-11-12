@@ -68,18 +68,23 @@ export function highlightKeyword(keyword, inputString) {
 
 
 /**
- * 处理播放时长，将秒数转换为分钟和秒的格式
+ * 处理播放时长，将秒数转换为 mm:ss（满 1 小时为 h:mm:ss）的格式
  * @param {Number} time 传入的总时长，以秒为单位
- * @returns {String} 处理后的时间字符串，格式为 'mm:ss'
+ * @returns {String} 处理后的时间字符串，非法值/负数返回 '00:00'
  */
 export function handleTime(time) {
-    time = parseInt(time);
-    time = Math.floor(time);
-    let m = Math.floor(time / 60);
-    let s = Math.floor(time % 60);
-    m = m < 10 ? '0' + m : m;
-    s = s < 10 ? '0' + s : s;
-    return m + ':' + s;
+    const total = Number(time);
+    // 非法值（undefined/NaN/Infinity）或负数统一兜底为 '00:00'
+    if (!Number.isFinite(total) || total < 0) {
+        return '00:00';
+    }
+    const seconds = Math.floor(total);
+    const s = seconds % 60;
+    const m = Math.floor(seconds / 60) % 60;
+    const h = Math.floor(seconds / 3600);
+    const pad = (n) => String(n).padStart(2, '0');
+    // 满 1 小时显示 h:mm:ss，否则 mm:ss，分秒始终补零
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
 
@@ -102,12 +107,19 @@ export function returnSecond(time) {
  * @returns {String} 转换后：'19.9万'
  */
 export function handleNum(num) {
-    if (num > 10000) {
-        num = (num / 10000).toFixed(1);
-        return num + '万';
-    } else {
-        return num;
+    let n = Number(num);
+    // 非有限值（undefined/NaN/Infinity）或负数统一兜底为 0
+    if (!Number.isFinite(n) || n < 0) {
+        n = 0;
     }
+    if (n >= 1e8) {
+        return (n / 1e8).toFixed(1) + '亿';
+    }
+    if (n >= 1e4) {
+        return (n / 1e4).toFixed(1) + '万';
+    }
+    // 始终返回字符串，保证模板渲染类型统一
+    return String(n);
 }
 
 
@@ -116,12 +128,24 @@ export function handleNum(num) {
  * @param {Number|String|Date} dateTime 传入的日期时间，可以是数字、字符串或日期对象
  * @returns {String} 处理后的日期字符串 2023-11-11 / 3-24 / 8小时前 / 30分钟前
  */
+/**
+ * W37：兼容 "2026-10-18 10:10" 这类空格分隔的非 ISO 时间（Safari / 旧浏览器会解析为 Invalid Date）。
+ * 统一把首处空格换成 T；解析失败返回 null，由调用方给出兜底文案，绝不输出 NaN。
+ */
+function toSafeDate(dateTime) {
+    const raw = typeof dateTime === 'string' ? dateTime.trim().replace(' ', 'T') : dateTime;
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+}
+
 export function handleDate(dateTime) {
     const currentDate = new Date();
-    const inputDate = new Date(dateTime);
+    const inputDate = toSafeDate(dateTime);
+    if (!inputDate) return '未知时间';
     // 计算时间差（以毫秒为单位）
     const timeDifference = currentDate - inputDate;
-    
+    if (timeDifference < 0) return '刚刚';
+
     if (timeDifference < 60 * 60 * 1000) {
         const minutes = Math.floor(timeDifference / 1000 / 60);
         return `${minutes}分钟前`;
@@ -150,10 +174,10 @@ export function handleDate(dateTime) {
  * @returns {String} 处理后的日期字符串 2023年12月18日 04:46 / 今天 15:00 / 昨天 00:00
  */
 export function handleDateTime(dateTime) {
-    // 将传入的日期时间转换为 Date 对象
-    const inputDate = new Date(dateTime);
+    // W37：与 handleDate 共用安全解析，兼容空格分隔的 mock 时间
+    const inputDate = toSafeDate(dateTime);
     // 如果转换后的日期无效，返回 '未知时间'
-    if (isNaN(inputDate.getTime())) {
+    if (!inputDate) {
         return '未知时间';
     }
     // 获取当前日期时间，计算输入日期与当前日期之间的天数差异
@@ -199,10 +223,9 @@ export function handleDateTime(dateTime) {
  * @returns {String} 处理后的日期字符串 12-26 02:53
  */
 export function handleDateTime2(dateTime) {
-    // 将传入的日期时间转换为 Date 对象
-    const inputDate = new Date(dateTime);
-    // 如果转换后的日期无效，返回 '未知时间'
-    if (isNaN(inputDate.getTime())) {
+    // W37：与 handleDate 共用安全解析，兼容 "2026-10-18 10:10" 空格分隔的 mock 时间
+    const inputDate = toSafeDate(dateTime);
+    if (!inputDate) {
         return '未知时间';
     }
     const month = String(inputDate.getMonth() + 1).padStart(2, '0');
@@ -218,8 +241,9 @@ export function handleDateTime2(dateTime) {
  * @returns {String} YYYY-MM-DD HH:mm / n小时前 / n分钟前 / 刚刚
  */
 export function handleDateTime3(dateTime) {
-    const inputDate = new Date(dateTime);
-    if (isNaN(inputDate.getTime())) {
+    // W37：统一走安全解析，避免部分浏览器把空格分隔时间解析成 Invalid Date
+    const inputDate = toSafeDate(dateTime);
+    if (!inputDate) {
         return "未知时间";
     }
 

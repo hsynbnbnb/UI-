@@ -485,6 +485,15 @@
     --graph_medium: var(--Ga5);
     --graph_icon: var(--Ga7);
     --shadow: var(--Ba0);
+    /* L09：窄屏默认内边距，避免 --layout-padding 只在 >=1140px 定义导致 var() 失效 */
+    --layout-padding: 24px;
+}
+
+/* L09：<1140px 视口补断点，按屏宽收敛留白，避免固定 padding 造成横向溢出 */
+@media (max-width: 1139.9px) {
+    :root {
+        --layout-padding: 16px;
+    }
 }
 
 @media (min-width: 1140px) and (max-width: 1559.9px) {

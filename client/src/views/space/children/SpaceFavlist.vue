@@ -46,17 +46,22 @@
                     <div class="favInfo-details">
                         <a class="fav-name" v-if="currFav">{{ currFav.title }}</a>
                         <div class="fav-meta" v-if="currFav">
-                            <span class="fav-desc" :title="currFav.description">{{ currFav.description }}</span>
+                            <span class="fav-desc" :title="currFav.description">{{ currFav.description || '暂无简介' }}</span>
                         </div>
                         <div class="fav-meta" v-if="currFav">
-                            <span>{{ currFav.count }}个内容</span>
-                            <span class="dot">·</span>
                             <span>{{ currFav.visible === 1 ? '公开' : '私密' }}</span>
+                            <span class="dot">·</span>
+                            <span>视频数：{{ currFav.count }}</span>
+                            <span class="dot">·</span>
+                            <span>播放量：{{ currFav.playCount || 0 }}</span>
                         </div>
                         <div class="fav-options">
                             <div class="play-all" @click="noPage">
                                 <svg t="1711992851151" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4395" width="16" height="16"><path d="M847.52000001 429.80266667L344.50133334 101.152c-78.176-45.184-142.21866667-8.18133333-142.21866667 82.13333333v657.22666667c0 90.368 64.04266667 127.30666667 142.21866667 82.19733333L847.52000001 594.13333333c78.25066667-45.25866667 78.25066667-119.14666667 0-164.33066666z m0 0" fill="#FFFFFF" p-id="4396"></path></svg>
                                 <span>播放全部</span>
+                            </div>
+                            <div class="batch-edit" @click="noPage">
+                                <span>批量操作</span>
                             </div>
                         </div>
                     </div>
@@ -67,22 +72,32 @@
                     <div class="be-tab">
                         <ul class="be-tab-inner">
                             <li class="be-tab-item" :class="{'active': rule === 1}" @click="rule = 1">
-                                <span>最新发布</span>
+                                <span>最近收藏</span>
                             </li>
                             <li class="be-tab-item" :class="{'active': rule === 2}" @click="rule = 2">
                                 <span>最多播放</span>
                             </li>
                             <li class="be-tab-item" :class="{'active': rule === 3}" @click="rule = 3">
-                                <span>最多点赞</span>
+                                <span>最近投稿</span>
                             </li>
                         </ul>
                         <div class="be-tab-cursor" :style="`transform: translateX(${63 * (rule - 1)}px); width: 48px;`"></div>
                     </div>
                 </div>
+                <div class="fav-toolbar">
+                    <div class="fav-current" @click="noPage">
+                        <span>当前</span>
+                        <i class="iconfont icon-xiajiantou"></i>
+                    </div>
+                    <div class="fav-search">
+                        <i class="iconfont icon-sousuo"></i>
+                        <input v-model="searchKeyword" type="text" placeholder="请输入关键词">
+                    </div>
+                </div>
             </div>
             <div class="fav-content" v-if="currFav && currFav.count > 0">
                 <ul class="fav-video-list clearfix">
-                    <li class="small-item" v-for="(item, index) in favVideos" :key="index">
+                    <li class="small-item" v-for="(item, index) in filteredVideos" :key="index">
                         <a :href="`/video/${item.video.vid}`" target="_blank" class="cover" v-if="item.video.status === 1">
                             <img v-if="item.video.coverUrl" :src="item.video.coverUrl" alt="">
                             <span v-if="item.video.duration" class="length">{{ handleDuration(item.video.duration) }}</span>
@@ -151,6 +166,7 @@ export default {
             rule: 1,    // 排序规则 1 最近收藏 2 最多播放 3 最新投稿
             page: 1,    // 当前分页
             favVideos: [],  // 当前收藏夹的视频列表
+            searchKeyword: '',  // 收藏夹内搜索关键词
         }
     },
     props: {
@@ -176,6 +192,15 @@ export default {
             } else {
                 return fav;
             }
+        },
+
+        // 根据搜索关键词过滤视频列表
+        filteredVideos() {
+            const kw = this.searchKeyword.trim();
+            if (!kw) return this.favVideos;
+            return this.favVideos.filter(item =>
+                item.video.title.includes(kw) || item.user.nickname.includes(kw)
+            );
         }
     },
     methods: {
@@ -594,13 +619,83 @@ ol, ul {
     margin-right: 6px;
 }
 
+.batch-edit {
+    height: 32px;
+    line-height: 30px;
+    margin-left: 10px;
+    padding: 0 16px;
+    font-size: 13px;
+    color: var(--text1);
+    border: 1px solid var(--line_regular);
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.batch-edit:hover {
+    color: var(--brand_pink);
+    border-color: var(--brand_pink);
+}
+
 .fav-header {
     margin: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .fav-info {
     height: 30px;
     margin-top: 15px;
+}
+
+.fav-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.fav-current {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--text2);
+    border: 1px solid var(--line_regular);
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fav-current:hover {
+    color: var(--brand_pink);
+}
+
+.fav-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line_regular);
+    border-radius: 4px;
+    color: var(--text3);
+}
+
+.fav-search .iconfont {
+    font-size: 13px;
+    color: var(--text3);
+}
+
+.fav-search input {
+    width: 130px;
+    height: 100%;
+    font-size: 13px;
+    color: var(--text1);
 }
 
 .be-tab {

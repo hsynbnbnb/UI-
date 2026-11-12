@@ -154,7 +154,7 @@ export default {
         // 前往搜索的回调
         goSearch() {
             this.searchPopHide();
-            let input = this.input.trim();
+            const input = this.input.trim();
             const index = this.histories.indexOf(input);
             if (index != -1) {
                 // 值已存在，移除该值
@@ -162,17 +162,14 @@ export default {
             }
             this.histories.unshift(input);  // 在列表开头插入新记录
             this.saveToLocalStorage();
-            if (input === "") {
-                // 输入空白符跳转搜索首页
-                this.$router.push("/search");
-            } else {
-                // 否则就跳搜索详情页
-                if (this.$route.path.startsWith('/search/user')) {
-                    this.$router.push(`/search/user?keyword=${input}`);
-                } else {
-                    this.$router.push(`/search/video?keyword=${input}`);
-                }
-            }
+            // 用对象形式提交：保留当前搜索子路由（视频/用户 tab）与其它 query，
+            // 只把回车提交的关键词同步进 route.query.keyword，保证列表与输入框一致。
+            // 空关键词时删除 keyword，落到已注册的子路由（由 SearchView 显示搜索入口页，不报错/不空白）。
+            const path = this.$route.path.startsWith('/search/user') ? '/search/user' : '/search/video';
+            const query = { ...this.$route.query };
+            if (input) query.keyword = input;
+            else delete query.keyword;
+            this.$router.push({ path, query });
         },
 
         // 显示搜索气泡框
@@ -248,6 +245,13 @@ export default {
         // 页面结束渲染前销毁事件的监听器
         window.removeEventListener("click", this.handleOutsideClick);
     },
+    watch: {
+        // 路由 query 变化（二次搜索、切 tab、浏览器前进/后退）时同步输入框，
+        // 避免输入框滞留旧关键词导致与结果列表不一致
+        '$route.query.keyword'(v) {
+            this.input = v || '';
+        }
+    },
 }
 </script>
 
@@ -321,7 +325,8 @@ export default {
 .search-panel {
     position: absolute;
     left: 0;
-    z-index: 998;
+    /* 弹层统一分层：高于 HeaderBar / mall__topbar 的 1002，避免建议面板被盖住 */
+    z-index: 1200;
     width: 100%;
     max-height: 612px;
     overflow-y: auto;
@@ -526,6 +531,16 @@ export default {
         --search_input_height: 44px;
         --search_panel_top: 46px;
         --search_button_height: 34px;
+    }
+}
+
+/* L09：<768px 视口下不再固定 640/480px，按容器宽度收敛，避免横向溢出 */
+@media (max-width: 767.9px) {
+    .search-input {
+        --search_input_width: min(100%, 300px);
+        --search_input_height: 40px;
+        --search_panel_top: 42px;
+        --search_button_height: 30px;
     }
 }
 

@@ -330,9 +330,9 @@ export default {
         }
     },
     methods: {
-        // 跳转到搜索结果页（与手机端分区点击行为一致）
+        // 跳转到搜索结果页（与手机端分区点击行为一致）；必须带 /video 子路由
         goSearch(keyword) {
-            this.$router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
+            this.$router.push(`/search/video?keyword=${encodeURIComponent(keyword)}`);
         },
 
         // 获取分区列表
@@ -729,14 +729,14 @@ header .window-cover {
 }
 
 .header-channel-fixed-container {
-    max-height: 56px;
+    max-height: 84px;
     overflow: hidden;
     transition: max-height .2s;
     display: flex;
     align-items: center;
     position: relative;
     width: 100%;
-    padding: 14px var(--layout-padding, 60px) 14px var(--layout-padding, 30px);
+    padding: 12px var(--layout-padding, 60px) 12px var(--layout-padding, 30px);
 }
 
 .header-channel-fixed-down {
@@ -795,9 +795,9 @@ header .window-cover {
 
 .header-channel-fixed-right-item {
     flex: none;
-    height: 28px;
-    line-height: 28px;
-    padding: 0 12px;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 14px;
     border: 1px solid var(--line_light);
     background: var(--graph_bg_thin);
     border-radius: 6px;
@@ -824,18 +824,16 @@ header .window-cover {
     flex: none;
 }
 
-.header-channel-fixed-right-left,
-.header-channel-fixed-right .left-bottom {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: none;
+/* 9 个分区：上下两行（上5下4），按键放大填充整栏 */
+.header-channel-fixed-right-left {
+    flex: 1;
+    min-width: 0;
 }
 
 .header-channel-fixed-right-left .left-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px 12px;
 }
 
 /* 收起态只显示第一行（分区），展开态显示全部；左/右两侧均用单行 flex 铺开 */

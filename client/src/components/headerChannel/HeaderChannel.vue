@@ -81,9 +81,9 @@
             }
         },
         methods: {
-            // 跳转到搜索结果页（与手机端分区点击行为一致）
+            // /search 是父路由且无默认子路由，必须直达 /search/video 才会渲染结果列表
             goSearch(keyword) {
-                this.$router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
+                this.$router.push(`/search/video?keyword=${encodeURIComponent(keyword)}`);
             },
             // 获取分区列表
             async getPartitions() {
@@ -299,22 +299,24 @@
 
 .channel-items__left {
     position: relative;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
     align-items: center;
     width: 100%;
-    gap: 10px;
+    gap: 10px 12px;
     padding-right: 30px;
     border-right: 1px solid var(--line_regular);
 }
 
 .channel-link {
     cursor: pointer;
-    display: inline-block;
-    box-sizing: content-box;
-    padding: 0 14px;
-    height: 28px;
-    line-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 34px;
+    line-height: 34px;
     border: 1px solid var(--line_light);
     border-radius: 6px;
     background-color: var(--graph_bg_thin);
@@ -334,9 +336,8 @@
 @media (max-width: 1366.9px) {
     .channel-link {
         font-size: 13px;
-        height: 24px;
-        line-height: 24px;
-        padding: 0 10px;
+        height: 30px;
+        line-height: 30px;
     }
 }
 

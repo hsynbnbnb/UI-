@@ -4,7 +4,8 @@
             <!-- 视频 -->
             <div class="section video">
                 <h3 class="section-title">
-                    <span class="t" @click="$router.push(`/space/${uid}/video`)">{{ this.$store.state.user.uid === uid ? '我' : 'TA' }}的视频</span>
+                    <!-- W37：路由 uid 是字符串、store.user.uid 是数字，统一转字符串比较，避免自己空间误显示「TA」 -->
+                    <span class="t" @click="$router.push(`/space/${uid}/video`)">{{ String(this.$store.state.user.uid) === String(uid) ? '我' : 'TA' }}的视频</span>
                     <span class="count">{{ videoCount }}</span>
                     <span class="more" @click="$router.push(`/space/${uid}/video`)">更多<i class="iconfont icon-youjiantou"></i></span>
                     <div class="be-tab" v-if="videoCount > 1">
@@ -115,7 +116,7 @@
             <div class="section user-info">
                 <p class="user-info-title">
                     <span class="info-title">个人资料</span>
-                    <a href="/account/info" target="_blank" v-if="uid === this.$store.state.user.uid">
+                    <a href="/account/profile" target="_blank" v-if="uid === this.$store.state.user.uid">
                         <span class="change-info-btn">修改资料</span>
                     </a>
                 </p>

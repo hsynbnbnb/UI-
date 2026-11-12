@@ -18,8 +18,7 @@
 
         <!-- 标签切换 -->
         <div class="mall__tabs">
-            <div class="mall__tab" :class="{ active: activeTab === 'event' }" @click="activeTab = 'event'">漫展演出</div>
-            <div class="mall__tab" :class="{ active: activeTab === 'goods' }" @click="activeTab = 'goods'">B站周边</div>
+            <div class="mall__tab" :class="{ active: activeTab === 'goods' }" @click="setTab('goods')">B站周边</div>
         </div>
 
         <!-- 分类与筛选栏 -->
@@ -88,9 +87,28 @@ export default {
         };
     },
     methods: {
+        // 把 category / sort / activeTab 同步进 URL query（replace 避免堆积历史），
+        // 刷新或从详情页返回后由 created 还原，筛选/排序不再回落默认值
+        syncQuery(patch) {
+            const query = { ...this.$route.query };
+            Object.keys(patch).forEach(k => {
+                const v = patch[k];
+                if (v === '' || v === undefined || v === null) delete query[k];
+                else query[k] = v;
+            });
+            const cur = this.$route.query;
+            const same = Object.keys(query).length === Object.keys(cur).length
+                && Object.keys(query).every(k => String(query[k]) === String(cur[k]));
+            if (!same) this.$router.replace({ query });
+        },
         goHome() { this.$router.push('/'); },
         goMall() { this.$router.push('/mall'); },
-        goDetail(id) { this.$router.push(`/product/${id}`); },
+        // 透传筛选 query 给详情页，详情页/购物车返回时原样带回 /mall
+        goDetail(id) { this.$router.push({ path: `/product/${id}`, query: this.$route.query }); },
+        setTab(t) {
+            this.activeTab = t;
+            this.syncQuery({ tab: t === 'goods' ? '' : t });
+        },
         openCategory() {
             // 分类入口：滚动到分类栏（交互占位，分类点击见下方 selectCategory）
             const el = this.$el.querySelector('.mall__filter-cats');
@@ -104,10 +122,12 @@ export default {
         },
         selectCategory(name) {
             this.category = name;
+            this.syncQuery({ category: name });
             this.getProducts();
         },
         setSort(s) {
             this.sort = s;
+            this.syncQuery({ sort: s });
             this.getProducts();
         },
         async getCategories() {
@@ -126,6 +146,10 @@ export default {
         }
     },
     created() {
+        const q = this.$route.query;
+        this.category = typeof q.category === 'string' ? q.category : '';
+        this.sort = typeof q.sort === 'string' ? q.sort : '';
+        this.activeTab = typeof q.tab === 'string' && q.tab ? q.tab : 'goods';
         this.getCategories();
         this.getProducts();
     }
@@ -135,23 +159,21 @@ export default {
 <style scoped>
 .mall {
     min-height: 100vh;
+    /* HeaderBar(fixed) 高 64px，内容整体下移，避免与会员购品牌栏叠在同一位置 */
+    padding-top: 64px;
     background: #f4f5f7;
     color: var(--text1);
 }
 
-/* 顶部品牌栏 */
+/* 顶部品牌栏：位于 HeaderBar 下方的第二条普通流内栏，不再与 HeaderBar 同为 fixed/top:0 */
 .mall__topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     height: 64px;
     display: flex;
     align-items: center;
     padding: 0 24px;
     background: #fff;
     border-bottom: 1px solid var(--line_light);
-    z-index: 1002;
 }
 .mall__brand {
     display: flex;
@@ -207,7 +229,7 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 40px;
-    padding-top: 76px;
+    padding-top: 0;
     padding-bottom: 0;
     background: #fff;
     height: 48px;

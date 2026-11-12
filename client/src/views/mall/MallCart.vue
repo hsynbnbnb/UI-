@@ -3,6 +3,7 @@
         <HeaderBar :isFixHeaderBar="true" :isShowSearchInput="false"></HeaderBar>
 
         <div class="cart__head">
+            <span class="cart__back" @click="goMall">‹ 返回商城</span>
             <span class="cart__title">购物车</span>
         </div>
 
@@ -39,7 +40,7 @@
         <div class="cart__empty" v-else>
             <div class="cart__empty-icon">🛒</div>
             <p>购物车是空的，去商城逛逛吧~</p>
-            <button class="cart__go" @click="$router.push('/mall')">去购物</button>
+            <button class="cart__go" @click="goMall">去购物</button>
         </div>
 
         <div class="cart__footer" v-if="items.length">
@@ -49,7 +50,7 @@
                 </span>
                 全选
             </button>
-            <div class="cart__total">合计：<strong>¥{{ selectedTotal.toFixed(0) }}</strong></div>
+            <div class="cart__total">合计：<strong>¥{{ selectedTotal.toFixed(2) }}</strong></div>
             <button class="cart__checkout" @click="checkout">去结算({{ selectedCount }})</button>
         </div>
     </div>
@@ -97,12 +98,47 @@ export default {
             this.$store.dispatch('removeCartItem', id);
             ElMessage.success('已删除该商品');
         },
-        checkout() {
+        // 返回商城：带上进入购物车时透传的筛选 query，保留 MallView 的筛选/排序
+        goMall() {
+            this.$router.push({ path: '/mall', query: this.$route.query });
+        },
+        async checkout() {
             if (this.selectedCount === 0) {
                 ElMessage.warning('请先选择要结算的商品');
                 return;
             }
-            ElMessage.info(`结算 ${this.selectedCount} 件商品，合计 ¥${this.selectedTotal}（演示）`);
+            const selected = this.items.filter(i => i.selected);
+            const items = selected.map(i => ({
+                id: i.id,
+                title: i.title,
+                coverSeed: i.coverSeed || 'prod-paimon',
+                coverUrl: i.coverUrl,
+                price: i.price,
+                qty: i.qty,
+            }));
+            // W33/P2：金额统一保留 2 位，避免浮点尾数与 toFixed(0) 抹去小数
+            const total = Number(items.reduce((sum, i) => sum + i.price * i.qty, 0).toFixed(2));
+            const shop = selected[0].shop || 'pilipili会员购';
+
+            // 只走后端：前端不生成、不持久化订单，留好 items/total/shop 与 /cart 调用点。
+            // 后端 POST /mall/order/create 从 cart_item 的已选行生成订单，订单数据以后端响应为准。
+            try {
+                for (const i of items) {
+                    await this.$post('/cart', { productId: i.id, quantity: i.qty, selected: true });
+                }
+                const res = await this.$post('/mall/order/create', { shop, items, total });
+                const payload = res && res.data;
+                if (payload && payload.code === 200 && payload.data && payload.data.orderId) {
+                    this.$store.dispatch('clearSelectedCart');
+                    ElMessage.success(`下单成功，订单号 ${payload.data.orderId}`);
+                    this.$router.push({ path: '/orders', query: this.$route.query });
+                    return;
+                }
+                // 后端未接入或业务校验失败时如实透出，不再伪造本地订单造成假成功
+                ElMessage.warning((payload && payload.message) || '下单接口暂未接入，请联系后端');
+            } catch (e) {
+                ElMessage.error('下单请求失败，请检查后端服务是否已启动');
+            }
         }
     },
     created() {
@@ -116,11 +152,25 @@ export default {
     min-height: 100vh;
     background: #f4f5f7;
     color: var(--text1);
+    /* 底部固定结算栏(64px)降到吸顶层后，留白避免末条商品被遮 */
     padding-bottom: 90px;
 }
 .cart__head {
     padding-top: 84px;
     text-align: center;
+    position: relative;
+}
+.cart__back {
+    position: absolute;
+    left: 24px;
+    top: 84px;
+    line-height: 28px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+}
+.cart__back:hover {
+    color: var(--brand_pink);
 }
 .cart__title {
     font-size: 22px;
@@ -294,7 +344,8 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 16px;
-    z-index: 1001;
+    /* 分层规范：吸顶 100，弹层 1000+（VPopover/搜索面板），Toast 2000 */
+    z-index: 100;
 }
 .check-all {
     display: flex;

@@ -1,9 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '@/store'
 import LoginVue from '@/views/LoginVue.vue'
 import IndexVue from '@/views/IndexVue.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import AdminTableView from '@/views/AdminTableView.vue'
 import VideoReview from '@/views/VideoReview.vue'
+import MallManage from '@/views/mall/MallManage.vue'
+import UserManage from '@/views/user/UserManage.vue'
 
 const routes = [
     { path: '/login', name: 'login', component: LoginVue },
@@ -19,7 +22,8 @@ const routes = [
             { path: 'data', name: 'data', component: AdminTableView, meta: { requiresAuth: true, title: '数据统计', endpoint: '/admin/data/overview' } },
             { path: 'report', name: 'report', component: AdminTableView, meta: { requiresAuth: true, title: '举报处理', endpoint: '/admin/report/list' } },
             { path: 'appeal', name: 'appeal', component: AdminTableView, meta: { requiresAuth: true, title: '申诉处理', endpoint: '/admin/appeal/list' } },
-            { path: 'user', name: 'user', component: AdminTableView, meta: { requiresAuth: true, title: '用户管理', endpoint: '/admin/user/list' } },
+            { path: 'mall', name: 'mall', component: MallManage, meta: { requiresAuth: true, title: '会员购管理' } },
+            { path: 'user', name: 'user', component: UserManage, meta: { requiresAuth: true, title: '用户管理' } },
             { path: 'role', name: 'role', component: AdminTableView, meta: { requiresAuth: true, title: '角色权限', endpoint: '/admin/role/list' } }
         ]
     },
@@ -32,7 +36,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-    const isLogin = router.app.$store ? router.app.$store.state.isLogin : false
+    const isLogin = store.state.isLogin
     const hasToken = !!localStorage.getItem('admin_token')
     if (to.meta.requiresAuth && !isLogin && !hasToken) {
         next('/login')

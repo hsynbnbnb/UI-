@@ -1,15 +1,180 @@
 <template>
     <div class="space-fans">
-        我的粉丝
+        <div class="fans-empty" v-if="fansList.length === 0">
+            <img src="~assets/img/nothing.png" alt="">
+            <p>{{ emptyText }}</p>
+        </div>
+        <ul class="fans-list" v-else>
+            <li class="fans-item" v-for="fan in fansList" :key="fan.uid">
+                <a :href="`/space/${fan.uid}`" target="_blank" class="fans-avatar">
+                    <img :src="fan.avatar_url" :alt="fan.nickname">
+                </a>
+                <div class="fans-body">
+                    <a :href="`/space/${fan.uid}`" target="_blank" class="fans-name">{{ fan.nickname }}</a>
+                    <div class="fans-desc">{{ fan.description }}</div>
+                </div>
+                <div class="fans-btn" :class="isFollowing(fan) ? 'following' : 'not-follow'" @click="toggleFollow(fan)">
+                    {{ isFollowing(fan) ? '已关注' : '+ 关注' }}
+                </div>
+            </li>
+        </ul>
     </div>
 </template>
 
 <script>
+import { ElMessage } from 'element-plus';
+
+// Mock 演示：空间主人的粉丝列表按 $route.params.uid 派生，与关注列表用不同的选择规则，
+// 不同 uid 看到不同数据；无真实后端接口时提供空态兜底。
+const DEMO_USERS = [
+    { uid: 5, nickname: '感动收集站', description: 'Day 8 Mock 用户：收集每一个感动的瞬间' },
+    { uid: 6, nickname: '治疗时间', description: '治疗就交给我吧' },
+    { uid: 16, nickname: '提瓦特观测站长', description: '游戏区认证UP主，一起庆祝每个生日' },
+    { uid: 20, nickname: '新歌速递员', description: '新歌速递，快前来围观' },
+    { uid: 25, nickname: '泛动数据库', description: '学习项目账号' },
+    { uid: 28, nickname: '恋爱选择题', description: '哥哥的女朋友，只能由我来选' },
+    { uid: 31, nickname: '前端练习生', description: '30分钟搭一个仿B站首页' },
+    { uid: 36, nickname: 'Canvas 研究所', description: '用Canvas画一个弹幕引擎' }
+];
+
 export default {
     name: "SpaceFans",
+    data() {
+        return {
+            defaultAvatar: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png',
+        };
+    },
+    computed: {
+        spaceUid() {
+            return Number(this.$route.params.uid) || 0;
+        },
+        fansList() {
+            const uid = this.spaceUid;
+            if (!uid) return [];
+            const others = DEMO_USERS.filter(u => u.uid !== uid);
+            if (others.length === 0) return [];
+            const count = Math.min(others.length, 2 + (uid % 4));
+            const start = (uid * 3) % others.length;
+            const list = [];
+            for (let i = 0; i < count; i++) {
+                list.push({ ...others[(start + others.length - i) % others.length], avatar_url: this.defaultAvatar });
+            }
+            return list;
+        },
+        emptyText() {
+            return this.spaceUid ? `uid ${this.spaceUid} 还没有粉丝` : '空间不存在或 uid 无效';
+        }
+    },
+    methods: {
+        isFollowing(fan) {
+            return this.$store.state.followList.some(u => u.uid === fan.uid);
+        },
+        toggleFollow(fan) {
+            if (!this.$store.state.user.uid) {
+                this.$store.state.openLogin = true;
+                this.$nextTick(() => { this.$store.state.openLogin = false; });
+                return;
+            }
+            const nowFollowed = !this.isFollowing(fan);
+            this.$store.dispatch("toggleFollow", fan);
+            ElMessage.success(nowFollowed ? `已关注 ${fan.nickname}` : `已取消关注 ${fan.nickname}`);
+        }
+    }
 }
 </script>
 
 <style scoped>
+.space-fans {
+    padding: 20px;
+}
 
-</style>
+.fans-empty {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text3);
+}
+
+.fans-empty img {
+    width: 200px;
+    margin-bottom: 16px;
+}
+
+.fans-list {
+    list-style: none;
+}
+
+.fans-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line_light);
+}
+
+.fans-avatar {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.fans-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fans-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.fans-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text1);
+}
+
+.fans-name:hover {
+    color: var(--brand_pink);
+}
+
+.fans-desc {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fans-btn {
+    flex: none;
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.fans-btn.following {
+    color: var(--text3);
+    border: 1px solid var(--line_regular);
+    background: #fff;
+}
+
+.fans-btn.following:hover {
+    color: var(--brand_pink);
+    border-color: var(--brand_pink);
+}
+
+.fans-btn.not-follow {
+    color: #fff;
+    border: 1px solid var(--brand_pink);
+    background: var(--brand_pink);
+}
+
+.fans-btn.not-follow:hover {
+    background: var(--Pi4);
+}
+</style>

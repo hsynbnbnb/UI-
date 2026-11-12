@@ -39,7 +39,9 @@
 }
 
 .video-card__skeleton.hide {
-    visibility: hidden;
+    /* 加载完成后骨架不再占据文档流，卡片高度改由 .video-card__wrap 的真实内容撑开；
+       加载态（.loading_animation）骨架仍正常占位并显示动画 */
+    display: none;
 }
 
 .video-card__skeleton--cover {
@@ -90,9 +92,8 @@
 }
 
 .video-card__wrap {
-    position: absolute;
-    top: 0;
-    left: 0;
+    /* 回到文档流，让卡片高度由标题/UP 主行等真实内容撑开，避免溢出压住下一行 */
+    position: relative;
     z-index: 1;
     width: 100%;
     background-color: var(--bg1);
@@ -127,11 +128,13 @@
     background-color: var(--graph_bg_regular);
 }
 
-.video-card__cover img {
+.video-card__cover img,
+.video-card__cover video {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: inherit;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
 }
 
 .video-card__mask {

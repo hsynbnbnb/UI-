@@ -17,6 +17,9 @@
 let inTimer;  // 节流计时器
 let outTimer;
 
+// 将进度比例钳制到 (0,1) 开区间，并对 NaN/Infinity 兜底，避免 scaleX(NaN)
+const clampPer = (v) => Math.min(0.99999, Math.max(0.00001, Number.isFinite(v) ? v : 0));
+
 export default {
     name: "PlayerProgress",
     data() {
@@ -74,7 +77,7 @@ export default {
                 this.isDragging = true;
                 this.isActive = true;
                 offsetX = e.clientX - progress.getBoundingClientRect().left; // 鼠标相对进度条左侧的X偏移
-                currPer = offsetX / progress.getBoundingClientRect().width; // 计算进度比例
+                currPer = clampPer(offsetX / progress.getBoundingClientRect().width); // 计算进度比例并钳制到 0~1
                 this.$emit("changeCurrent", currPer);    // 更新
             });
 
@@ -83,7 +86,7 @@ export default {
                 this.isDragging = true;
                 this.isActive = true;
                 offsetX = e.touches[0].clientX - progress.getBoundingClientRect().left;
-                currPer = offsetX / progress.getBoundingClientRect().width; // 计算进度比例
+                currPer = clampPer(offsetX / progress.getBoundingClientRect().width); // 计算进度比例并钳制到 0~1
                 this.$emit("changeCurrent", currPer);    // 更新
             });
 
@@ -91,10 +94,7 @@ export default {
             document.addEventListener("mousemove", (e) => {
                 if (!this.isDragging) return;
                 offsetX = e.clientX - progress.getBoundingClientRect().left; // 鼠标相对进度条左侧的X偏移
-                currPer = offsetX / progress.getBoundingClientRect().width; // 计算进度比例
-                // 边界值判定
-                currPer = Math.max(0.00001, currPer);
-                currPer = Math.min(0.99999, currPer);
+                currPer = clampPer(offsetX / progress.getBoundingClientRect().width); // 计算进度比例并钳制到 0~1
                 this.$emit("changeCurrent", currPer);    // 更新
             });
 
@@ -103,10 +103,7 @@ export default {
                 if (!this.isDragging) return;
                 e.preventDefault();
                 offsetX = e.touches[0].clientX - progress.getBoundingClientRect().left;
-                currPer = offsetX / progress.getBoundingClientRect().width; // 计算进度比例
-                // 边界值判定
-                currPer = Math.max(0.00001, currPer);
-                currPer = Math.min(0.99999, currPer);
+                currPer = clampPer(offsetX / progress.getBoundingClientRect().width); // 计算进度比例并钳制到 0~1
                 this.$emit("changeCurrent", currPer);    // 更新
             }, { passive: false });
 

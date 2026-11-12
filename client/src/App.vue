@@ -102,6 +102,7 @@ export default {
         }
         this.getChannels();
         this.getHotSearch();
+        this.$store.dispatch("loadFollowList");
     },
     mounted() {
         window.addEventListener('beforeunload', this.closeIMWebSocket);    // beforeunload 事件监听标签页关闭
